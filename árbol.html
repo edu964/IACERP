@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ID3 simulación — Inteligencia artificial — CeRP del Litoral</title>
+<style>
+:root{
+  --blue:#0f4f82; --blue2:#eaf4fb;
+  --purple:#7040c6; --purple2:#f3edff;
+  --branch:#d48b00; --branch2:#fff6d9;
+  --green:#1f7a45; --green2:#eaf8ef;
+  --red:#c23c3c; --red2:#fdecec;
+  --orange:#c06b00; --orange2:#fff1df;
+  --ink:#19374f; --muted:#687f91; --line:#8ca9bd; --border:#d8e3ea;
+}
+*{box-sizing:border-box}
+html, body {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #edf3f8;
+  font-family: Segoe UI, Arial, sans-serif;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background: #fff;
+  padding: 6px 16px;
+  box-shadow: 0 1px 4px #0002;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+h1 { margin: 0; color: #073f6c; font-size: 18px; }
+.sub { color: #61788a; font-size: 11px; }
+
+.controls {
+  padding: 6px 16px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+  background: #edf3f8;
+}
+button {
+  border: 0;
+  border-radius: 6px;
+  padding: 6px 12px;
+  background: #146bd1;
+  color: #fff;
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+}
+button.green { background: #17854e; }
+button.gray { background: #667986; }
+button.orange { background: #e6a12b; color: #17232c; }
+
+.progress {
+  margin: 0 16px 4px;
+  height: 5px;
+  background: #dce6ee;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.bar { height: 100%; background: #1872c7; transition: .35s; }
+
+.info {
+  margin: 0 16px 6px;
+  padding: 6px 12px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px #0001;
+  flex-shrink: 0;
+}
+.info h2 { margin: 0 0 3px; font-size: 15px; color: #083d69; }
+.info p { margin: 0; font-size: 13px; line-height: 1.2; }
+.formula { font-weight: 800; color: #315f80; margin-top: 3px; font-size: 13px; }
+
+#work {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 16px 10px;
+  flex: 1;
+  min-height: 0;
+}
+
+.panel {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #0001;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.panelTitle {
+  padding: 6px 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: #083d69;
+  border-bottom: 1px solid #e4ebf0;
+  background: #fbfdff;
+  flex-shrink: 0;
+}
+
+#scene {
+  padding: 8px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+#treeWrap {
+  flex: 1;
+  padding: 4px;
+  background: #fbfdff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+#treeSvg {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #e4ebf0;
+  background: #f8fbfd;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.legend span { display: inline-flex; align-items: center; gap: 4px; padding: 2px 5px; border-radius: 4px; border: 1px solid #dbe4eb; background: #fff; }
+.dot { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.dot.root { background: var(--blue); }
+.dot.attr { background: var(--purple); }
+.dot.value { background: var(--branch2); border: 1px solid var(--branch); }
+.dot.yes { background: var(--green2); border: 1px solid var(--green); }
+.dot.no { background: var(--red2); border: 1px solid var(--red); }
+.dot.pending { background: var(--orange2); border: 1px solid var(--orange); }
+
+/* Cuadrícula de tarjetas ajustada y compacta */
+.cardsGrid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+  gap: 6px; 
+}
+.card { 
+  position: relative; 
+  background: #fff; 
+  border: 1px solid var(--border); 
+  border-radius: 6px; 
+  overflow: visible; 
+  box-shadow: 0 1px 3px #0001;
+}
+.card .num { 
+  position: absolute; 
+  left: -6px; 
+  top: -6px; 
+  width: 20px; 
+  height: 20px; 
+  border-radius: 50%; 
+  background: #17324d; 
+  color: #fff; 
+  display: grid; 
+  place-items: center; 
+  font-size: 10px; 
+  font-weight: 900; 
+  z-index: 2; 
+  box-shadow: 0 1px 2px #0003;
+}
+.cols { display: grid; grid-template-columns: repeat(3, 1fr); }
+.col { 
+  border-right: 1px solid #dce5ec; 
+  text-align: center; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: center; 
+  padding: 4px 2px; 
+}
+.col:last-child { border-right: 0; }
+.cn { font-size: 8px; color: #50697c; font-weight: 900; text-transform: uppercase; }
+.ic { font-size: 15px; margin: 1px 0; }
+.va { font-size: 10px; font-weight: 800; color: #17324d; white-space: nowrap; }
+.targetRow { 
+  border-top: 1px solid #dce5ec; 
+  padding: 3px 2px; 
+  font-size: 10px; 
+  font-weight: 900; 
+  text-align: center; 
+}
+.targetRow.yes { color: var(--green); background: var(--green2); }
+.targetRow.no { color: var(--red); background: var(--red2); }
+
+.sectionHead { font-size: 12px; font-weight: 900; color: #083d69; margin: 0 0 6px; text-align: center; }
+.groups { display: grid; gap: 6px; }
+.groups.cols2 { grid-template-columns: repeat(2, 1fr); }
+.groups.cols3 { grid-template-columns: repeat(3, 1fr); }
+.group { border: 1.5px dashed #769fc0; border-radius: 6px; background: #f0f8fd; padding: 6px; }
+.group.yes { border-color: #35a065; background: #eaf8ef; }
+.group.no { border-color: #d45858; background: #fff0f0; }
+.group.pending { border-color: #d98a2e; background: #fff8e9; }
+.groupTitle { text-align: center; font-weight: 900; font-size: 11px; margin-bottom: 6px; background: #fff; border-radius: 4px; padding: 3px; box-shadow: 0 1px 2px #0001; }
+
+.statsRow { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; max-width: 500px; margin: auto; }
+.stat { border: 2px solid #b9ccdc; border-radius: 10px; background: #f8fbfe; padding: 20px 12px; text-align: center; box-shadow: 0 2px 5px #0001; }
+.stat h3 { margin: 0 0 6px; font-size: 15px; color: #083d69; }
+.big { font-size: 42px; font-weight: 900; margin: 2px 0; }
+.stat p { margin: 0; font-size: 13px; font-weight: 700; color: #50697c; }
+
+.entropyBox { width: 100%; max-width: 500px; margin: auto; padding: 16px; border: 2px solid #4f87b5; border-radius: 10px; background: #eef7ff; text-align: center; box-shadow: 0 2px 5px #0001; }
+.entropyBox h2 { margin: 0; font-size: 15px; color: #083d69; }
+.entropyBox .eq { font-size: 13px; font-weight: 900; margin: 8px 0; }
+.entropyBox .result { font-size: 28px; font-weight: 900; color: #0b4778; }
+.entropyBox p { font-size: 12px; margin: 4px 0 0; }
+
+.compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.candidate { border: 2px solid #a8bdd0; border-radius: 8px; background: #f8fbfd; padding: 10px 6px; text-align: center; }
+.candidate.winner { border-color: #2f9960; background: #edf9f1; }
+.candidate h3 { margin: 0 0 4px; font-size: 11px; }
+.gain { font-size: 16px; font-weight: 900; margin: 2px 0; }
+.candidate p { margin: 0; font-size: 10px; }
+
+.callout { margin-top: 6px; background: #fff7da; border: 1px solid #dfb43d; border-radius: 6px; padding: 6px 8px; font-size: 11px; font-weight: 700; line-height: 1.3; }
+
+/* Tamaño dinámico de tarjetas según el paso */
+#scene.size-xs .cardsGrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+#scene.size-xs .cn{font-size:10px} #scene.size-xs .ic{font-size:20px} #scene.size-xs .va{font-size:12px}
+#scene.size-xs .targetRow{font-size:11px;padding:5px}
+#scene.size-xs .card{min-height:118px}
+#scene.size-xs .card .num{width:23px;height:23px;font-size:11px}
+
+#scene.size-sm .cardsGrid{grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px}
+#scene.size-sm .cn{font-size:9px} #scene.size-sm .ic{font-size:18px} #scene.size-sm .va{font-size:11px}
+#scene.size-sm .targetRow{font-size:10px;padding:4px}
+
+#scene.size-md .cardsGrid{grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px}
+#scene.size-md .cn{font-size:10px} #scene.size-md .ic{font-size:22px} #scene.size-md .va{font-size:12px}
+#scene.size-md .targetRow{font-size:11px;padding:5px}
+
+#scene.size-lg .cardsGrid{grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px}
+#scene.size-lg .cn{font-size:11px} #scene.size-lg .ic{font-size:28px} #scene.size-lg .va{font-size:14px}
+#scene.size-lg .targetRow{font-size:12px;padding:6px}
+
+#scene.size-xl .cardsGrid{grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+#scene.size-xl .cn{font-size:12px} #scene.size-xl .ic{font-size:32px} #scene.size-xl .va{font-size:16px}
+#scene.size-xl .targetRow{font-size:13px;padding:7px}
+
+.envGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;max-width:820px;margin:auto;width:100%}
+.envCard{border:2px solid #c9d9e5;border-radius:14px;background:#f9fcff;padding:16px;box-shadow:0 2px 7px #0001}
+.envCard.target{grid-column:1/-1;border-color:#3f83b6;background:#eef7ff}
+.envCard h3{margin:0 0 8px;font-size:17px;color:#083d69}
+.envCard .main{font-size:23px;font-weight:900;margin-bottom:8px}
+.envCard .opts{display:flex;flex-wrap:wrap;gap:8px}
+.envCard .pill{background:#fff;border:1px solid #cfdce6;border-radius:999px;padding:7px 10px;font-size:13px;font-weight:800}
+.envIntro{max-width:820px;margin:6px auto 14px;font-size:14px;line-height:1.45;color:#496174}
+
+
+.calcGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%;max-width:900px;margin:10px auto}
+.calcBox{background:#f9fcff;border:2px solid #c8dbe8;border-radius:14px;padding:14px;box-shadow:0 2px 6px #0001}
+.calcBox.winner{background:#edf9f1;border-color:#38a365}
+.calcBox.tie{background:#fff8e8;border-color:#d99a2b}
+.calcBox h3{margin:0 0 8px;font-size:17px;color:#083d69;text-align:center}
+.calcBox .value{font-size:25px;font-weight:900;text-align:center;color:#164f7b;margin:7px 0}
+.calcBox p{font-size:13px;line-height:1.45;margin:5px 0}
+.formulaPanel{max-width:900px;margin:10px auto;background:#eef7ff;border:2px solid #4f87b5;border-radius:14px;padding:15px;font-size:14px;line-height:1.55}
+.formulaPanel strong{color:#083d69}
+.decisionBox{max-width:900px;margin:12px auto;padding:14px 18px;border:3px solid #2f9960;background:#edf9f1;border-radius:14px;text-align:center;font-size:16px;font-weight:900}
+.smallTable{width:100%;border-collapse:collapse;margin-top:8px;font-size:12px}
+.smallTable th,.smallTable td{border:1px solid #d7e2e9;padding:6px;text-align:center}
+.smallTable th{background:#edf4f8;color:#244b68}
+
+</style>
+</head>
+<body>
+<header>
+  <h1>ID3 simulación</h1>
+  <div class="sub"><b>Inteligencia artificial — CeRP del Litoral</b></div>
+</header>
+
+<div class="controls">
+  <button id="play" class="green">▶ Reproducir</button>
+  <button id="prev" class="gray">◀ Anterior</button>
+  <button id="next">Siguiente ▶</button>
+  <button id="reset" class="orange">↻ Reiniciar</button>
+</div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+
+<div class="info">
+  <h2 id="it"></h2>
+  <p id="id"></p>
+  <div class="formula" id="ifm"></div>
+</div>
+
+<div id="work">
+  <section class="panel">
+    <div class="panelTitle" id="sceneTitle">Dataset</div>
+    <div id="scene"></div>
+  </section>
+
+  <section class="panel">
+    <div class="panelTitle">Árbol de decisión ID3</div>
+    <div class="legend">
+      <span><i class="dot root"></i> RAÍZ</span>
+      <span><i class="dot attr"></i> ATRIBUTO</span>
+      <span><i class="dot value"></i> VALOR</span>
+      <span><i class="dot yes"></i> 🍃 HOJA Sí</span>
+      <span><i class="dot no"></i> 🍂 HOJA No</span><span style="border-color:#d97706;background:#fff4df">🍂 HOJA POR MAYORÍA</span><span style="border-color:#d97706;background:#fff4df">⚠ HOJA SIN DECISIÓN ÚNICA</span>
+      <span><i class="dot pending"></i> ⚠️ Aún no único</span>
+    </div>
+    <div id="treeWrap"><svg id="treeSvg" viewBox="0 0 1840 900" preserveAspectRatio="xMidYMid meet"></svg></div>
+  </section>
+</div>
+
+<script>
+const D=[
+{id:1,clima:"Soleado",temp:"Alta",viento:"Fuerte",juega:"Si"},
+{id:2,clima:"Lluvioso",temp:"Baja",viento:"No fuerte",juega:"No"},
+{id:3,clima:"Nublado",temp:"Media",viento:"Fuerte",juega:"Si"},
+{id:4,clima:"Soleado",temp:"Media",viento:"No fuerte",juega:"Si"},
+{id:5,clima:"Lluvioso",temp:"Media",viento:"No fuerte",juega:"No"},
+{id:6,clima:"Nublado",temp:"Alta",viento:"Fuerte",juega:"No"},
+{id:7,clima:"Nublado",temp:"Baja",viento:"No fuerte",juega:"No"},
+{id:8,clima:"Lluvioso",temp:"Media",viento:"Fuerte",juega:"No"},
+{id:9,clima:"Soleado",temp:"Media",viento:"No fuerte",juega:"Si"},
+{id:10,clima:"Lluvioso",temp:"Media",viento:"Fuerte",juega:"Si"},
+{id:11,clima:"Nublado",temp:"Alta",viento:"Fuerte",juega:"Si"},
+{id:12,clima:"Soleado",temp:"Media",viento:"No fuerte",juega:"Si"},
+{id:13,clima:"Lluvioso",temp:"Baja",viento:"Fuerte",juega:"No"},
+{id:14,clima:"Soleado",temp:"Media",viento:"Fuerte",juega:"Si"},
+{id:15,clima:"Nublado",temp:"Media",viento:"No fuerte",juega:"No"},
+{id:16,clima:"Nublado",temp:"Baja",viento:"Fuerte",juega:"No"},
+{id:17,clima:"Lluvioso",temp:"Media",viento:"Fuerte",juega:"No"},
+{id:18,clima:"Nublado",temp:"Media",viento:"Fuerte",juega:"Si"}
+];
+const climaIcon={Soleado:"☀️",Nublado:"☁️",Lluvioso:"🌧️"};
+const tempIcon={Alta:"🌡️",Media:"🌤️",Baja:"❄️"};
+const vientoIcon={"Fuerte":"💨","No fuerte":"〰️"};
+
+function cardHTML(d){
+ return `<div class="card">
+   <div class="num">${d.id}</div>
+   <div class="cols">
+     <div class="col"><div class="cn">Clima</div><div class="ic">${climaIcon[d.clima]}</div><div class="va">${d.clima}</div></div>
+     <div class="col"><div class="cn">Temp</div><div class="ic">${tempIcon[d.temp]}</div><div class="va">${d.temp}</div></div>
+     <div class="col"><div class="cn">Viento</div><div class="ic">${vientoIcon[d.viento]}</div><div class="va">${d.viento}</div></div>
+   </div>
+   <div class="targetRow ${d.juega==="Si"?"yes":"no"}">Juega: ${d.juega==="Si"?"✅ Sí":"❌ No"}</div>
+ </div>`;
+}
+function cards(ds){return `<div class="cardsGrid">${ds.map(cardHTML).join("")}</div>`}
+function group(title,ds,cls=""){return `<div class="group ${cls}"><div class="groupTitle">${title}</div>${cards(ds)}</div>`}
+function setInfo(a,b,c=""){it.textContent=a;id.textContent=b;ifm.textContent=c}
+function clearScene(title,size="md"){sceneTitle.textContent=title;scene.innerHTML="";scene.className="size-"+size}
+function esc(s){return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")}
+
+function edge(x1,y1,x2,y2,label=""){
+ const mx=(x1+x2)/2,my=(y1+y2)/2;
+ return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#8ca9bd" stroke-width="3"/>
+ ${label?`<rect x="${mx-69}" y="${my-19}" width="138" height="38" rx="6" fill="#fff6d9" stroke="#d48b00" stroke-width="1.5"/>
+ <text x="${mx}" y="${my+5}" text-anchor="middle" font-size="21" font-weight="900" fill="#6c4b00">${esc(label)}</text>`:""}`;
+}
+function node(x,y,w,h,title,sub,type="attr",icon=""){
+ const cfg={
+  root:["#0f4f82","#0f4f82","#fff","RAÍZ"],
+  attr:["#f3edff","#7040c6","#4b2c86","ATRIBUTO"],
+  yes:["#eaf8ef","#1f7a45","#155c32","🍃 HOJA"],
+  no:["#fdecec","#c23c3c","#8e2828","🍂 HOJA"],
+  majority:["#fff1df","#c06b00","#874900","🍂 HOJA POR MAYORÍA"],
+  tieLeaf:["#fff1df","#c06b00","#874900","⚠ SIN DECISIÓN"],
+  pending:["#fff1df","#c06b00","#874900","⚠ CONTINUAR"]
+ };
+ const [fill,stroke,color,label]=cfg[type];
+ return `<g>
+ <rect x="${x-w/2}" y="${y-h/2}" width="${w}" height="${h}" rx="12" fill="${fill}" stroke="${stroke}" stroke-width="3"/>
+ <text x="${x}" y="${y-h/2+28}" text-anchor="middle" font-size="18" font-weight="900" fill="${color}">${label}</text>
+ <text x="${x}" y="${y+10}" text-anchor="middle" font-size="28" font-weight="900" fill="${color}">${icon} ${esc(title)}</text>
+ ${sub?`<text x="${x}" y="${y+37}" text-anchor="middle" font-size="18" font-weight="800" fill="${color}">${esc(sub)}</text>`:""}
+ </g>`;
+}
+
+function renderTree(state){
+ let s=`<rect x="0" y="0" width="1840" height="900" fill="#fbfdff"/>`;
+ const root=()=>node(800,70,235,104,"CLIMA","IG = 0,40018","root","🌦️");
+ const baseBranches=()=>{
+   let q=root();
+   q+=edge(800,114,170,215,"Soleado")+edge(800,114,500,215,"Lluvioso")+edge(800,114,1300,215,"Nublado");
+   q+=node(170,265,195,104,"SÍ JUEGA","5 Sí / 0 No","yes");
+   q+=node(500,265,225,108,"ANALIZAR","1 Sí / 5 No","pending");
+   q+=node(1300,265,235,112,"ANALIZAR","3 Sí / 4 No","pending");
+   return q;
+ };
+ const lluvTempNode=()=>{
+   let q=root();
+   q+=edge(800,114,170,215,"Soleado")+edge(800,114,500,215,"Lluvioso")+edge(800,114,1300,215,"Nublado");
+   q+=node(170,265,195,104,"SÍ JUEGA","5 Sí / 0 No","yes");
+   q+=node(500,265,270,126,"TEMPERATURA","rama Lluvioso","attr","🌡️");
+   q+=node(1300,265,235,112,"ANALIZAR","3 Sí / 4 No","pending");
+   return q;
+ };
+ const lluvTempBranches=()=>{
+   let q=lluvTempNode();
+   q+=edge(500,319,330,455,"Baja")+edge(500,319,670,455,"Media");
+   q+=node(285,505,225,120,"NO JUEGA","0 Sí / 2 No","no");
+   q+=node(670,505,225,108,"ANALIZAR","1 Sí / 3 No","pending");
+   return q;
+ };
+ const lluvWindNode=()=>{
+   let q=lluvTempNode();
+   q+=edge(500,319,330,455,"Baja")+edge(500,319,670,455,"Media");
+   q+=node(285,505,225,120,"NO JUEGA","0 Sí / 2 No","no");
+   q+=node(650,505,270,126,"VIENTO","Lluvioso + Media","attr","💨");
+   return q;
+ };
+ const lluvComplete=()=>{
+   let q=lluvWindNode();
+   q+=edge(650,561,470,720,"No fuerte")+edge(650,561,830,720,"Fuerte");
+   q+=node(470,775,225,120,"NO JUEGA","0 Sí / 1 No","no");
+   q+=node(830,775,265,128,"NO JUEGA","1 Sí / 2 No","majority","");
+   return q;
+ };
+ const nubladoTempNode=()=>{
+   let q=lluvComplete();
+   q+=node(1300,265,285,128,"TEMPERATURA","rama Nublado","attr","🌡️");
+   return q;
+ };
+ const nubladoTempBranches=()=>{
+   let q=nubladoTempNode();
+   q+=edge(1300,321,1020,455,"Baja")+edge(1300,321,1280,455,"🌡️ Alta")+edge(1300,321,1570,455,"Media");
+   q+=node(1020,505,225,120,"NO JUEGA","0 Sí / 2 No","no");
+   q+=node(1280,505,270,138,"EMPATE","1 Sí / 1 No","tieLeaf","");
+   q+=node(1570,505,255,120,"CONTINUAR","2 Sí / 1 No","pending");
+   return q;
+ };
+ const nubladoWindNode=()=>{
+   let q=nubladoTempNode();
+   q+=edge(1300,321,1020,455,"Baja")+edge(1300,321,1280,455,"🌡️ Alta")+edge(1300,321,1570,455,"Media");
+   q+=node(1020,505,225,120,"NO JUEGA","0 Sí / 2 No","no");
+   q+=node(1280,505,270,138,"EMPATE","1 Sí / 1 No","tieLeaf","");
+   q+=node(1570,505,285,126,"VIENTO","Nublado + Media","attr","💨");
+   return q;
+ };
+ const finalTree=()=>{
+   let q=nubladoWindNode();
+   q+=edge(1570,561,1450,720,"No fuerte")+edge(1570,561,1690,720,"Fuerte");
+   q+=node(1450,775,225,120,"NO JUEGA","0 Sí / 1 No","no");
+   q+=node(1690,775,225,120,"SÍ JUEGA","2 Sí / 0 No","yes");
+   
+   return q;
+ };
+ if(state==="none"){
+   s+=`<text x="800" y="420" text-anchor="middle" font-size="24" font-weight="900" fill="#7a8b98">El árbol todavía no se construyó</text>
+   <text x="800" y="460" text-anchor="middle" font-size="16" fill="#7a8b98">Primero explicamos y justificamos cada decisión.</text>`;
+ } else if(state==="root") s+=root();
+ else if(state==="climaBranches") s+=baseBranches();
+ else if(state==="lluvTempNode") s+=lluvTempNode();
+ else if(state==="lluvTempBranches") s+=lluvTempBranches();
+ else if(state==="lluvWindNode") s+=lluvWindNode();
+ else if(state==="lluvComplete") s+=lluvComplete();
+ else if(state==="nubladoTempNode") s+=nubladoTempNode();
+ else if(state==="nubladoTempBranches") s+=nubladoTempBranches();
+ else if(state==="nubladoWindNode") s+=nubladoWindNode();
+ else if(state==="final") s+=finalTree();
+ treeSvg.innerHTML=s;
+}
+
+function step0(){ clearScene("Paso 1 · Dataset original — 18 casos","xs"); scene.innerHTML=`<div class="sectionHead">Cada tarjeta muestra el nombre de la columna, el icono y el valor</div>${cards(D)}`; renderTree("none"); setInfo("1 · Observamos el dataset","Cada tarjeta representa una fila. Clima, Temperatura y Viento son atributos; JuegaTenis es la clase objetivo.","18 ejemplos"); }
+function step1(){ clearScene("Paso 2 · Conocemos el entorno","lg"); scene.innerHTML=`<div class="envIntro">Antes de calcular, identificamos qué queremos predecir y qué variables puede usar el árbol.</div><div class="envGrid"><div class="envCard target"><h3>🎯 TARGET</h3><div class="main">Decisión de jugar al tenis</div><div class="opts"><span class="pill">✅ Juega</span><span class="pill">❌ No juega</span></div></div><div class="envCard"><h3>🌦️ VARIABLE: Clima</h3><div class="opts"><span class="pill">☀️ Soleado</span><span class="pill">🌧️ Lluvioso</span><span class="pill">☁️ Nublado</span></div></div><div class="envCard"><h3>🌡️ VARIABLE: Temperatura</h3><div class="opts"><span class="pill">🌡️ Alta</span><span class="pill">🌤️ Media</span><span class="pill">❄️ Baja</span></div></div><div class="envCard" style="grid-column:1/-1"><h3>💨 VARIABLE: Viento</h3><div class="opts"><span class="pill">💨 Fuerte</span><span class="pill">〰️ No fuerte</span></div></div></div>`; renderTree("none"); setInfo("2 · Identificamos target y variables","El target es lo que queremos predecir; las variables son los atributos que ID3 probará.","Target: JuegaTenis"); }
+function step2(){ clearScene("Paso 3 · Contamos la variable objetivo","xl"); scene.innerHTML=`<div class="statsRow"><div class="stat"><h3>🎾 SÍ JUEGA</h3><div class="big" style="color:#1f7a45">9</div><p>9 de 18</p></div><div class="stat"><h3>🚫 NO JUEGA</h3><div class="big" style="color:#c23c3c">9</div><p>9 de 18</p></div></div>`; renderTree("none"); setInfo("3 · Distribución de la clase objetivo","Hay 9 Sí y 9 No.","p(Sí)=9/18 · p(No)=9/18"); }
+function step3(){ clearScene("Paso 4 · Entropía general","xl"); scene.innerHTML=`<div class="entropyBox"><h2>Entropía del conjunto inicial</h2><div class="eq">H(S)=−(9/18)log₂(9/18)−(9/18)log₂(9/18)</div><div class="result">H(S)=1,000</div><p>Máxima mezcla.</p></div>`; renderTree("none"); setInfo("4 · Medimos la incertidumbre inicial","Esta entropía será la referencia para calcular la ganancia.","H(S)=1,000"); }
+function step4(){ clearScene("Paso 5 · Probamos CLIMA","sm"); scene.innerHTML=`<div class="groups cols3">${group("☀️ Soleado",D.filter(d=>d.clima==="Soleado"),"yes")}${group("🌧️ Lluvioso",D.filter(d=>d.clima==="Lluvioso"),"pending")}${group("☁️ Nublado",D.filter(d=>d.clima==="Nublado"),"pending")}</div><div class="callout">Entropía esperada = <b>0,59982</b> · IG(Clima)=<b>0,40018</b></div>`; renderTree("none"); setInfo("5 · Primera prueba","Todavía no construimos el árbol.","IG(Clima)=0,40018"); }
+function step5(){ clearScene("Paso 6 · Probamos TEMPERATURA","sm"); scene.innerHTML=`<div class="groups cols3">${group("🌡️ Alta",D.filter(d=>d.temp==="Alta"),"pending")}${group("🌤️ Media",D.filter(d=>d.temp==="Media"),"pending")}${group("❄️ Baja",D.filter(d=>d.temp==="Baja"),"no")}</div><div class="callout">Entropía esperada = <b>0,73095</b> · IG(Temperatura)=<b>0,26905</b></div>`; renderTree("none"); setInfo("6 · Segunda prueba","El árbol sigue vacío.","IG(Temperatura)=0,26905"); }
+function step6(){ clearScene("Paso 7 · Probamos VIENTO","sm"); scene.innerHTML=`<div class="groups cols2">${group("💨 Fuerte",D.filter(d=>d.viento==="Fuerte"),"pending")}${group("〰️ No fuerte",D.filter(d=>d.viento==="No fuerte"),"pending")}</div><div class="callout">Entropía esperada = <b>0,99061</b> · IG(Viento)=<b>0,00939</b></div>`; renderTree("none"); setInfo("7 · Tercera prueba","Terminamos de evaluar los candidatos.","IG(Viento)=0,00939"); }
+function step7(){ clearScene("Paso 8 · Comparamos atributos","xl"); scene.innerHTML=`<div class="compare"><div class="candidate winner"><h3>🌦️ CLIMA</h3><div class="gain">0,40018</div></div><div class="candidate"><h3>🌡️ TEMPERATURA</h3><div class="gain">0,26905</div></div><div class="candidate"><h3>💨 VIENTO</h3><div class="gain">0,00939</div></div></div><div class="decisionBox">Se elige <b>CLIMA</b>.</div>`; renderTree("none"); setInfo("8 · Decidimos antes de dibujar","La comparación queda clara primero.","CLIMA gana"); }
+function step8(){ clearScene("Paso 9 · Incorporamos CLIMA","xl"); scene.innerHTML=`<div class="decisionBox">Ahora sí aparece <b>CLIMA</b> como raíz.</div>`; renderTree("root"); setInfo("9 · Primer elemento","Sólo aparece la raíz.","Raíz = CLIMA"); }
+function step9(){ clearScene("Paso 10 · Analizamos las ramas de CLIMA","sm"); scene.innerHTML=`<div class="groups cols3">${group("☀️ Soleado → 5 Sí / 0 No",D.filter(d=>d.clima==="Soleado"),"yes")}${group("🌧️ Lluvioso → 1 Sí / 5 No",D.filter(d=>d.clima==="Lluvioso"),"pending")}${group("☁️ Nublado → 3 Sí / 4 No",D.filter(d=>d.clima==="Nublado"),"pending")}</div>`; renderTree("root"); setInfo("10 · Interpretamos los grupos","Soleado queda puro; Lluvioso y Nublado no.","Aún no dibujamos las ramas"); }
+function step10(){ clearScene("Paso 11 · Incorporamos las ramas de CLIMA","xl"); scene.innerHTML=`<div class="decisionBox">Ahora aparecen Soleado, Lluvioso y Nublado. Lluvioso y Nublado quedan como pendientes.</div>`; renderTree("climaBranches"); setInfo("11 · Primer nivel completo","Todavía no aparece Temperatura.","Clima → 3 ramas"); }
+function step11(){ const x=D.filter(d=>d.clima==="Lluvioso"); clearScene("Paso 12 · Entramos en LLUVIOSO","lg"); scene.innerHTML=`${cards(x)}<div class="formulaPanel">6 casos: 1 Sí / 5 No · H=<strong>0,650</strong>.<br>Quedan Temperatura y Viento.</div>`; renderTree("climaBranches"); setInfo("12 · Recalculamos en Lluvioso","No agregamos ningún nuevo nodo aún.","H=0,650"); }
+function step12(){ const x=D.filter(d=>d.clima==="Lluvioso"); clearScene("Paso 13 · LLUVIOSO: probamos TEMPERATURA","lg"); scene.innerHTML=`<div class="groups cols2">${group("❄️ Baja",x.filter(d=>d.temp==="Baja"),"no")}${group("🌤️ Media",x.filter(d=>d.temp==="Media"),"pending")}</div><div class="formulaPanel">Entropía esperada=<strong>0,541</strong> · IG=<strong>0,109</strong></div>`; renderTree("climaBranches"); setInfo("13 · Primera candidata","Temperatura todavía no aparece en el árbol.","IG=0,109"); }
+function step13(){ const x=D.filter(d=>d.clima==="Lluvioso"); clearScene("Paso 14 · LLUVIOSO: probamos VIENTO","lg"); scene.innerHTML=`<div class="groups cols2">${group("💨 Fuerte",x.filter(d=>d.viento==="Fuerte"),"pending")}${group("〰️ No fuerte",x.filter(d=>d.viento==="No fuerte"),"no")}</div><div class="formulaPanel">Entropía esperada=<strong>0,541</strong> · IG=<strong>0,109</strong></div>`; renderTree("climaBranches"); setInfo("14 · Segunda candidata","Viento tampoco aparece todavía.","IG=0,109"); }
+function step14(){ clearScene("Paso 15 · LLUVIOSO: comparamos","xl"); scene.innerHTML=`<div class="calcGrid"><div class="calcBox tie"><h3>🌡️ TEMPERATURA</h3><div class="value">0,109</div></div><div class="calcBox tie"><h3>💨 VIENTO</h3><div class="value">0,109</div></div></div><div class="decisionBox" style="border-color:#d99a2b;background:#fff8e8;color:#6b4a00">Empate → usamos <b>Temperatura</b> como desempate.</div>`; renderTree("climaBranches"); setInfo("15 · Decidimos","Primero la justificación; después el nodo.","Temperatura elegida"); }
+function step15(){ clearScene("Paso 16 · Incorporamos TEMPERATURA","xl"); scene.innerHTML=`<div class="decisionBox">Ahora aparece solamente <b>TEMPERATURA</b> en la rama Lluvioso.</div>`; renderTree("lluvTempNode"); setInfo("16 · Nuevo nodo","Sus ramas todavía no aparecen.","Lluvioso → Temperatura"); }
+function step16(){ const x=D.filter(d=>d.clima==="Lluvioso"); clearScene("Paso 17 · Interpretamos BAJA y MEDIA","lg"); scene.innerHTML=`<div class="groups cols2">${group("❄️ Baja → 0 Sí / 2 No",x.filter(d=>d.temp==="Baja"),"no")}${group("🌤️ Media → 1 Sí / 3 No",x.filter(d=>d.temp==="Media"),"pending")}</div>`; renderTree("lluvTempNode"); setInfo("17 · Explicamos las ramas","Baja será hoja No; Media continuará.","Aún no se dibujan"); }
+function step17(){ clearScene("Paso 18 · Incorporamos BAJA y MEDIA","xl"); scene.innerHTML=`<div class="decisionBox">Ahora aparecen las dos ramas de Temperatura.</div>`; renderTree("lluvTempBranches"); setInfo("18 · Actualizamos el árbol","Baja queda en hoja; Media pendiente.","Baja / Media"); }
+function step18(){ const x=D.filter(d=>d.clima==="Lluvioso"&&d.temp==="Media"); clearScene("Paso 19 · LLUVIOSO + MEDIA: calculamos VIENTO","lg"); scene.innerHTML=`${cards(x)}<div class="formulaPanel">H=<strong>0,811</strong> · Entropía esperada=<strong>0,689</strong> · IG(Viento)=<strong>0,123</strong></div>`; renderTree("lluvTempBranches"); setInfo("19 · Justificamos Viento","Todavía no aparece.","IG=0,123"); }
+function step19(){ clearScene("Paso 20 · Incorporamos VIENTO","xl"); scene.innerHTML=`<div class="decisionBox">Ahora aparece <b>VIENTO</b> debajo de Lluvioso + Media.</div>`; renderTree("lluvWindNode"); setInfo("20 · Nuevo nodo","Aún no sus resultados.","Viento"); }
+function step20(){ const x=D.filter(d=>d.clima==="Lluvioso"&&d.temp==="Media"); clearScene("Paso 21 · Interpretamos VIENTO","lg"); scene.innerHTML=`<div class="groups cols2">${group("〰️ No fuerte → 0 Sí / 1 No",x.filter(d=>d.viento==="No fuerte"),"no")}${group("💨 Fuerte → 1 Sí / 2 No",x.filter(d=>d.viento==="Fuerte"),"pending")}</div>`; renderTree("lluvWindNode"); setInfo("21 · Explicamos los resultados","No fuerte queda puro en No. En Fuerte quedan 1 Sí y 2 No y ya no quedan atributos para seguir separando; por eso la decisión final es No por mayoría.","Todavía no se dibujan"); }
+function step21(){ clearScene("Paso 22 · Completamos LLUVIOSO","xl"); scene.innerHTML=`<div class="decisionBox">Ahora aparecen las ramas finales de Viento.</div>`; renderTree("lluvComplete"); setInfo("22 · Rama Lluvioso completa","Ya está construida.","Lluvioso completo"); }
+function step22(){ const x=D.filter(d=>d.clima==="Nublado"); clearScene("Paso 23 · Entramos en NUBLADO","lg"); scene.innerHTML=`${cards(x)}<div class="formulaPanel">7 casos: 3 Sí / 4 No · H=<strong>0,985</strong>.<br>Quedan Temperatura y Viento.</div>`; renderTree("lluvComplete"); setInfo("23 · Recalculamos en Nublado","Nublado sigue pendiente.","H=0,985"); }
+function step23(){ const x=D.filter(d=>d.clima==="Nublado"); clearScene("Paso 24 · NUBLADO: probamos TEMPERATURA","lg"); scene.innerHTML=`<div class="groups cols3">${group("❄️ Baja",x.filter(d=>d.temp==="Baja"),"no")}${group("🌡️ Alta",x.filter(d=>d.temp==="Alta"),"pending")}${group("🌤️ Media",x.filter(d=>d.temp==="Media"),"pending")}</div><div class="formulaPanel">Entropía esperada=<strong>0,679</strong> · IG=<strong>0,306</strong></div>`; renderTree("lluvComplete"); setInfo("24 · Primera candidata","Temperatura aún no aparece.","IG=0,306"); }
+function step24(){ const x=D.filter(d=>d.clima==="Nublado"); clearScene("Paso 25 · NUBLADO: probamos VIENTO","lg"); scene.innerHTML=`<div class="groups cols2">${group("💨 Fuerte",x.filter(d=>d.viento==="Fuerte"),"pending")}${group("〰️ No fuerte",x.filter(d=>d.viento==="No fuerte"),"no")}</div><div class="formulaPanel">Entropía esperada=<strong>0,694</strong> · IG=<strong>0,292</strong></div>`; renderTree("lluvComplete"); setInfo("25 · Segunda candidata","Aún no modificamos el árbol.","IG=0,292"); }
+function step25(){ clearScene("Paso 26 · NUBLADO: comparamos","xl"); scene.innerHTML=`<div class="calcGrid"><div class="calcBox winner"><h3>🌡️ TEMPERATURA</h3><div class="value">0,306</div></div><div class="calcBox"><h3>💨 VIENTO</h3><div class="value">0,292</div></div></div><div class="decisionBox">0,306 > 0,292 → <b>TEMPERATURA</b></div>`; renderTree("lluvComplete"); setInfo("26 · Decidimos","Primero queda clara la elección.","Temperatura gana"); }
+function step26(){ clearScene("Paso 27 · Incorporamos TEMPERATURA","xl"); scene.innerHTML=`<div class="decisionBox">Ahora aparece sólo <b>TEMPERATURA</b> en Nublado.</div>`; renderTree("nubladoTempNode"); setInfo("27 · Nuevo nodo","Las ramas aún no.","Nublado → Temperatura"); }
+function step27(){ const x=D.filter(d=>d.clima==="Nublado"); clearScene("Paso 28 · Interpretamos BAJA, ALTA y MEDIA","lg"); scene.innerHTML=`<div class="groups cols3">${group("❄️ Baja → 0 Sí / 2 No",x.filter(d=>d.temp==="Baja"),"no")}${group("🌡️ Alta → 1 Sí / 1 No",x.filter(d=>d.temp==="Alta"),"pending")}${group("🌤️ Media → 2 Sí / 1 No",x.filter(d=>d.temp==="Media"),"pending")}</div>`; renderTree("nubladoTempNode"); setInfo("28 · Explicamos las ramas","Baja → No; Alta → no único; Media → seguir.","Aún no se dibujan"); }
+function step28(){ clearScene("Paso 29 · Incorporamos BAJA, ALTA y MEDIA","xl"); scene.innerHTML=`<div class="decisionBox">Ahora aparecen las tres ramas de Temperatura.</div>`; renderTree("nubladoTempBranches"); setInfo("29 · Actualizamos el árbol","Media queda pendiente.","Baja / Alta / Media"); }
+function step29(){ const x=D.filter(d=>d.clima==="Nublado"&&d.temp==="Media"); clearScene("Paso 30 · NUBLADO + MEDIA: calculamos VIENTO","lg"); scene.innerHTML=`${cards(x)}<div class="formulaPanel">H=<strong>0,918</strong> · Entropía esperada=<strong>0</strong> · IG(Viento)=<strong>0,918</strong></div>`; renderTree("nubladoTempBranches"); setInfo("30 · Justificamos Viento","Todavía no aparece.","IG=0,918"); }
+function step30(){ clearScene("Paso 31 · Incorporamos VIENTO","xl"); scene.innerHTML=`<div class="decisionBox">Ahora aparece el nodo <b>VIENTO</b>.</div>`; renderTree("nubladoWindNode"); setInfo("31 · Nuevo nodo","Aún no sus hojas.","Nublado + Media → Viento"); }
+function step31(){ const x=D.filter(d=>d.clima==="Nublado"&&d.temp==="Media"); clearScene("Paso 32 · Interpretamos VIENTO","lg"); scene.innerHTML=`<div class="groups cols2">${group("〰️ No fuerte → 0 Sí / 1 No",x.filter(d=>d.viento==="No fuerte"),"no")}${group("💨 Fuerte → 2 Sí / 0 No",x.filter(d=>d.viento==="Fuerte"),"yes")}</div>`; renderTree("nubladoWindNode"); setInfo("32 · Explicamos las hojas","No fuerte → No; Fuerte → Sí.","Todavía no se dibujan"); }
+function step32(){ clearScene("Paso 33 · Árbol final","xl"); scene.innerHTML=`<div class="formulaPanel"><strong>Secuencia:</strong> explicar → calcular → comparar → decidir → recién entonces dibujar.</div>`; renderTree("final"); setInfo("33 · Árbol completo","Cada elemento aparece únicamente después de ser explicado.","Sincronización completa"); }
+const steps=[step0,step1,step2,step3,step4,step5,step6,step7,step8,step9,step10,step11,step12,step13,step14,step15,step16,step17,step18,step19,step20,step21,step22,step23,step24,step25,step26,step27,step28,step29,step30,step31,step32];
+let s=0,timer=null;
+function show(i){s=Math.max(0,Math.min(steps.length-1,i));steps[s]();bar.style.width=((s+1)/steps.length*100)+"%"}
+function stop(){if(timer)clearInterval(timer);timer=null;play.textContent="▶ Reproducir"}
+next.onclick=()=>{stop();show(s+1)}
+prev.onclick=()=>{stop();show(s-1)}
+reset.onclick=()=>{stop();show(0)}
+play.onclick=()=>{if(timer){stop();return}if(s===steps.length-1)show(0);play.textContent="⏸ Pausar";timer=setInterval(()=>{if(s===steps.length-1)stop();else show(s+1)},6500)}
+show(0);
+</script>
+</body>
+</html>
