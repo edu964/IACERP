@@ -290,6 +290,106 @@ button.orange { background: #e6a12b; color: #17232c; }
 .smallTable th,.smallTable td{border:1px solid #d7e2e9;padding:6px;text-align:center}
 .smallTable th{background:#edf4f8;color:#244b68}
 
+
+/* Adaptación responsive para cualquier pantalla o bloque de inserción.
+   No modifica contenido, datos, textos ni lógica de la simulación. */
+html, body {
+  width: 100%;
+  min-width: 0;
+}
+body {
+  height: 100dvh;
+  min-height: 0;
+}
+header, .controls, .progress, .info, #work, .panel, #scene, #treeWrap {
+  min-width: 0;
+}
+#work {
+  width: auto;
+}
+#scene {
+  overflow: auto;
+}
+#treeSvg {
+  max-width: 100%;
+}
+
+@media (max-width: 900px) {
+  header { padding: 5px 10px; }
+  h1 { font-size: clamp(14px, 2.5vw, 18px); }
+  .sub { font-size: clamp(9px, 1.8vw, 11px); }
+  .controls { padding: 5px 10px; gap: 5px; flex-wrap: wrap; }
+  button { padding: 5px 9px; font-size: 11px; flex: 1 1 auto; }
+  .progress { margin: 0 10px 4px; }
+  .info { margin: 0 10px 5px; padding: 5px 9px; }
+  .info h2 { font-size: 13px; }
+  .info p, .formula { font-size: 11px; }
+  #work { margin: 0 10px 8px; gap: 7px; }
+  .panelTitle { padding: 5px 7px; font-size: 11px; }
+  .legend { padding: 4px 6px; gap: 3px; font-size: 9px; }
+  .legend span { padding: 1px 3px; }
+  #scene { padding: 5px; }
+}
+
+@media (max-width: 680px), (max-height: 560px) {
+  header { padding: 3px 7px; }
+  h1 { font-size: 13px; }
+  .sub { font-size: 8px; }
+  .controls { padding: 3px 7px; gap: 3px; }
+  button { padding: 4px 6px; font-size: 9px; border-radius: 4px; }
+  .progress { margin: 0 7px 3px; height: 3px; }
+  .info { margin: 0 7px 4px; padding: 4px 7px; }
+  .info h2 { font-size: 11px; margin-bottom: 1px; }
+  .info p, .formula { font-size: 9px; line-height: 1.1; }
+  #work { margin: 0 7px 6px; gap: 5px; }
+  .panel { border-radius: 7px; }
+  .panelTitle { padding: 4px 5px; font-size: 9px; }
+  .legend { padding: 3px 4px; font-size: 7px; gap: 2px; }
+  .legend span { gap: 2px; padding: 1px 2px; }
+  .dot { width: 6px; height: 6px; }
+  #scene { padding: 4px; }
+  #treeWrap { padding: 2px; }
+
+  #scene.size-xs .cardsGrid,
+  #scene.size-sm .cardsGrid,
+  #scene.size-md .cardsGrid,
+  #scene.size-lg .cardsGrid,
+  #scene.size-xl .cardsGrid {
+    grid-template-columns: repeat(auto-fit, minmax(min(105px, 100%), 1fr));
+    gap: 4px;
+  }
+  #scene.size-xs .card, #scene.size-sm .card, #scene.size-md .card,
+  #scene.size-lg .card, #scene.size-xl .card { min-height: 0; }
+  #scene.size-xs .cn, #scene.size-sm .cn, #scene.size-md .cn, #scene.size-lg .cn, #scene.size-xl .cn { font-size: 7px; }
+  #scene.size-xs .ic, #scene.size-sm .ic, #scene.size-md .ic, #scene.size-lg .ic, #scene.size-xl .ic { font-size: 13px; }
+  #scene.size-xs .va, #scene.size-sm .va, #scene.size-md .va, #scene.size-lg .va, #scene.size-xl .va { font-size: 8px; }
+  #scene.size-xs .targetRow, #scene.size-sm .targetRow, #scene.size-md .targetRow, #scene.size-lg .targetRow, #scene.size-xl .targetRow { font-size: 8px; padding: 2px; }
+  .card .num { width: 17px !important; height: 17px !important; font-size: 8px !important; left: -3px; top: -3px; }
+  .col { padding: 2px 1px; }
+
+  .groups.cols2, .groups.cols3, .compare, .calcGrid, .envGrid, .statsRow { gap: 5px; }
+  .group { padding: 4px; }
+  .groupTitle, .sectionHead, .callout, .candidate p { font-size: 8px; }
+  .candidate { padding: 5px 3px; }
+  .candidate h3 { font-size: 8px; }
+  .gain { font-size: 12px; }
+  .envCard, .calcBox, .formulaPanel, .decisionBox, .entropyBox, .stat { padding: 7px; border-radius: 7px; }
+  .envCard h3, .calcBox h3 { font-size: 10px; }
+  .envCard .main { font-size: 13px; }
+  .envCard .pill, .envIntro, .calcBox p, .formulaPanel, .decisionBox, .entropyBox p, .stat p { font-size: 8px; }
+  .envCard .pill { padding: 3px 5px; }
+  .entropyBox h2, .stat h3 { font-size: 10px; }
+  .entropyBox .eq { font-size: 9px; margin: 4px 0; }
+  .entropyBox .result { font-size: 18px; }
+  .big { font-size: 24px; }
+}
+
+@media (max-width: 460px) {
+  #work { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .groups.cols3, .compare { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .groups.cols2, .calcGrid, .envGrid, .statsRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .va { white-space: normal; overflow-wrap: anywhere; }
+}
 </style>
 </head>
 <body>
