@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador de Machine Learning - Paso a Paso</title>
+<style>
+:root {
+  --blue: #0f4f82; --blue-light: #eaf4fb;
+  --purple: #7040c6; --purple-light: #f3edff;
+  --green: #1f7a45; --green-light: #eaf8ef;
+  --red: #c23c3c; --red-light: #fdecec;
+  --orange: #c06b00; --orange-light: #fff1df;
+  --ink: #19374f; --muted: #687f91; --border: #d8e3ea;
+  --code-bg: #1e1e1e;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%; margin: 0; padding: 0;
+  background: #edf3f8; font-family: 'Segoe UI', system-ui, sans-serif;
+  color: var(--ink); display: flex; flex-direction: column; overflow-x: hidden;
+}
+
+header {
+  background: #fff; padding: 10px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+}
+h1 { margin: 0; color: #073f6c; font-size: 20px; }
+.sub { color: #61788a; font-size: 12px; font-weight: 600; }
+
+.controls {
+  padding: 10px 20px; display: flex; gap: 10px; align-items: center;
+  background: #edf3f8; flex-shrink: 0; flex-wrap: wrap;
+}
+button.nav-btn {
+  border: 0; border-radius: 6px; padding: 8px 16px; background: #146bd1;
+  color: #fff; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s;
+}
+button.nav-btn:hover { background: #0f52a3; }
+button.nav-btn:disabled { background: #a5b9cb; cursor: not-allowed; }
+button.gray { background: #667986; }
+button.gray:hover { background: #4d5c67; }
+
+.progress {
+  margin: 0 20px 10px; height: 6px; background: #dce6ee; border-radius: 10px; overflow: hidden;
+}
+.bar { height: 100%; background: #1872c7; width: 14.28%; transition: 0.35s; }
+
+.main-content {
+  margin: 0 20px 20px; flex: 1; display: flex; flex-direction: column; min-height: 0; gap: 15px;
+}
+
+.panel {
+  background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+}
+
+.panel-title {
+  font-size: 18px; font-weight: 800; color: #083d69; margin-top: 0; margin-bottom: 10px;
+  border-bottom: 2px solid var(--blue-light); padding-bottom: 8px;
+}
+
+.btn-group { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+.option-btn {
+  padding: 10px 18px; border: 2px solid #b2c8d9; background: #f8fbfd;
+  border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; color: var(--ink);
+  transition: all 0.2s;
+}
+.option-btn:hover { border-color: #146bd1; background: #eef7ff; }
+.option-btn.active { border-color: #146bd1; background: #146bd1; color: #fff; }
+
+.grid-split {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1;
+}
+@media (max-width: 850px) { .grid-split { grid-template-columns: 1fr; } }
+
+pre {
+  background: var(--code-bg); color: #d4d4d4; padding: 15px; border-radius: 8px;
+  font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.5;
+  overflow-x: auto; margin: 0; height: 100%; box-sizing: border-box;
+}
+.kw { color: #569cd6; font-weight: bold; }
+.str { color: #ce9178; }
+.com { color: #6a9955; font-style: italic; }
+.fn { color: #dcdcaa; }
+
+.graphic-box {
+  background: #f8fbfe; border: 2px solid #c9d9e5; border-radius: 10px; padding: 15px;
+  display: flex; flex-direction: column; justify-content: flex-start; align-items: center; gap: 12px;
+}
+
+.demo-table {
+  width: 100%; border-collapse: collapse; font-size: 12px; margin: 5px 0; text-align: center;
+}
+.demo-table th, .demo-table td { border: 1px solid #c8dbe8; padding: 6px; }
+.demo-table th { background: #eef7ff; color: #083d69; }
+
+.card-info {
+  background: #fff; border: 1.5px solid #c8dbe8; border-radius: 8px; padding: 14px; width: 100%;
+  font-size: 13.5px; line-height: 1.5; color: #19374f;
+}
+
+.class-card {
+  width: 100%; border: 2px solid var(--purple); border-radius: 10px; overflow: hidden; background: #fff;
+}
+.class-header {
+  background: var(--purple-light); color: var(--purple); font-weight: 800; font-size: 16px; text-align: center; padding: 10px; border-bottom: 2px solid var(--purple);
+}
+.class-section {
+  padding: 10px 14px; border-bottom: 1px dashed #d8e3ea;
+}
+.class-section-title {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 800; color: #687f91; margin-bottom: 5px;
+}
+.class-item {
+  font-size: 13.5px; font-weight: 600; margin: 4px 0; display: flex; align-items: center; gap: 8px; line-height: 1.4;
+}
+
+.input-box {
+  width: 100%; padding: 8px; border: 1px solid #b2c8d9; border-radius: 6px; font-size: 13px; margin-top: 4px;
+}
+
+.info-card-block {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 2px solid #b2c8d9;
+  padding: 14px;
+  margin-bottom: 10px;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.info-card-block.purple { border-color: var(--purple); background: #faf8ff; }
+.info-card-block.blue { border-color: #146bd1; background: #f4f8fd; }
+.info-card-block.green { border-color: var(--green); background: #f2faf5; }
+
+.info-title {
+  font-weight: 800; font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+}
+.info-title.purple { color: var(--purple); }
+.info-title.blue { color: #083d69; }
+.info-title.green { color: var(--green); }
+
+.info-list {
+  margin: 0; padding-left: 18px;
+}
+.info-list li {
+  margin-bottom: 6px;
+}
+
+.cm-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  width: 100%;
+  margin: 10px 0;
+}
+.cm-cell {
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+  font-size: 12px;
+  border: 1px solid #ccc;
+}
+.cm-cell.vp { background: #d1e7dd; border-color: #0f5132; color: #0f5132; }
+.cm-cell.fp { background: #f8d7da; border-color: #842029; color: #842029; }
+.cm-cell.fn-cell { background: #fff3cd; border-color: #664d03; color: #664d03; }
+.cm-cell.vn { background: #e2e3e5; border-color: #41464b; color: #41464b; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Simulador de Machine Learning</h1>
+  <div class="sub">Clasificación con Árboles de Decisión y Scikit-Learn</div>
+</header>
+
+<div class="controls">
+  <button class="nav-btn gray" id="btnPrev" onclick="navigate(-1)">◀ Anterior</button>
+  <button class="nav-btn" id="btnNext" onclick="navigate(1)">Siguiente ▶</button>
+  <span style="font-weight: 800; font-size: 14px; color: #083d69; margin-left: auto;" id="stepTitle">PASO 1 de 7</span>
+</div>
+
+<div class="progress"><div class="bar" id="progressBar"></div></div>
+
+<div class="main-content">
+
+  <!-- PASO 1: CARGA DE DATOS -->
+  <div class="panel screen" id="screen1">
+    <h2 class="panel-title">PASO 1: Carga de Datos</h2>
+    <p style="font-size: 15px; margin-top: 0;">Iniciamos cargando los datos. Se presentan las dos formas posibles de importarlos al proyecto.</p>
+
+    <div class="btn-group">
+      <button class="option-btn active" onclick="showP1('dic', this)">Opción A: Diccionario Manual</button>
+      <button class="option-btn" onclick="showP1('drive', this)">Opción B: Carga desde Google Drive</button>
+    </div>
+
+    <div class="grid-split">
+      <div><pre id="p1Code"></pre></div>
+      <div class="graphic-box" id="p1Graphic"></div>
+    </div>
+  </div>
+
+  <!-- PASO 2: CODIFICACIÓN CATEGÓRICA -->
+  <div class="panel screen" id="screen2" style="display:none;">
+    <h2 class="panel-title">PASO 2: Codificación (get_dummies)</h2>
+    <p style="font-size: 15px; margin-top: 0;">Los algoritmos necesitan trabajar con valores numéricos. Por eso transformamos las categorías en columnas numéricas.</p>
+
+    <div class="grid-split">
+      <div>
+<pre><span class="com"># Los algoritmos necesitan trabajar con valores numéricos.</span>
+<span class="com"># Por eso transformamos las categorías en columnas numéricas.</span>
+
+df_codificado = pd.<span class="fn">get_dummies</span>(
+    df,
+    columns=[
+        <span class="str">"Humedad_suelo"</span>,
+        <span class="str">"Temperatura"</span>,
+        <span class="str">"Clima"</span>
+    ]
+)
+
+print(<span class="str">"\nDatos codificados:"</span>)
+print(df_codificado)</pre>
+      </div>
+      <div class="graphic-box">
+        <h4 style="margin:0; color:#083d69; font-size:16px;">Transformación Visual (Banderas Booleanas)</h4>
+        <div style="font-size: 13.5px; text-align: center; width: 100%;">
+          <p>Texto original: <code>Clima = "Soleado"</code></p>
+          <p>⬇️</p>
+          <table class="demo-table">
+            <thead>
+              <tr><th>Clima_Lluvioso</th><th>Clima_Nublado</th><th>Clima_Soleado</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>False</td><td>False</td><td style="color:green; font-weight:bold;">True</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-info">
+          <b>Explicación:</b> Cada valor categórico se convierte en una columna binaria (True/False o 1/0) para que la matemática del modelo pueda procesarla.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 3: SEPARACIÓN DE X Y Y -->
+  <div class="panel screen" id="screen3" style="display:none;">
+    <h2 class="panel-title">PASO 3: Separación de Atributos (X) y Target (y)</h2>
+    <p style="font-size: 15px; margin-top: 0;">Separamos las variables predictoras del objetivo a predecir.</p>
+
+    <div class="grid-split">
+      <div>
+<pre><span class="com"># Separar X e y</span>
+<span class="com"># X contiene las variables que utilizará el modelo para realizar la predicción.</span>
+<span class="com"># X = atributos</span>
+<span class="com"># y = target</span>
+
+X = df_codificado.<span class="fn">drop</span>(columns=[<span class="str">"Regar"</span>])
+
+<span class="com"># y contiene la variable que queremos predecir.</span>
+y = df_codificado[<span class="str">"Regar"</span>]</pre>
+      </div>
+      <div class="graphic-box">
+        <h4 style="margin:0; color:#083d69; font-size:16px;">Estructura de Variables</h4>
+        <div style="width:100%;">
+          <div style="background:var(--blue-light); border:1.5px solid var(--blue); padding:10px; border-radius:8px; margin-bottom:10px; font-size:14px;">
+            <b>X (Atributos):</b> Matriz con 8 columnas codificadas (Humedad, Temperatura, Clima).
+          </div>
+          <div style="background:var(--green-light); border:1.5px solid var(--green); padding:10px; border-radius:8px; font-size:14px;">
+            <b>y (Target / Objetivo):</b> Vector con la respuesta real ('Sí' o 'No').
+          </div>
+        </div>
+        <div class="card-info">
+          <b>Explicación:</b> <code>X</code> representa las preguntas/evidencias y <code>y</code> representa la respuesta correcta que deseamos aprender a predecir.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAUSA CONCEPTUAL PREVIA AL PASO 4 -->
+  <div class="panel screen" id="screen4" style="display:none;">
+    <h2 class="panel-title" style="color: var(--purple);">Antes de seguir con el paso 4 debemos pasar por esta explicación conceptual</h2>
+    <p style="font-size: 15px; margin-top: 0;">Entendiendo la Programación Orientada a Objetos en Machine Learning sobre la clase <code>DecisionTreeClassifier</code>, sus métodos y parámetros.</p>
+
+    <div class="grid-split">
+      <div>
+<pre><span class="kw">from</span> sklearn.tree <span class="kw">import</span> DecisionTreeClassifier
+
+<span class="com"># DecisionTreeClassifier es la CLASE (la plantilla).</span>
+<span class="com"># 'modelo' es un OBJETO / INSTANCIA creada a partir de esa clase.</span>
+
+modelo = DecisionTreeClassifier(
+    criterion=<span class="str">"entropy"</span>,  <span class="com"># Criterio para realizar las divisiones</span>
+    random_state=<span class="str">0</span>        <span class="com"># Semilla aleatoria para resultados reproducibles</span>
+)
+
+<span class="com"># Métodos principales del objeto:</span>
+<span class="com"># modelo.fit(X, y)   -> Entrena el árbol usando X e y</span>
+<span class="com"># modelo.predict(X) -> Realiza predicciones (ŷ) para datos X</span>
+<span class="com"># modelo.score(X, y) -> Evalúa el modelo (devuelve accuracy)</span></pre>
+      </div>
+      <div class="graphic-box">
+        <div class="class-card">
+          <div class="class-header">DecisionTreeClassifier</div>
+          
+          <div class="class-section" style="background:#f0f4f8;">
+            <div class="class-section-title">Parámetros Principales</div>
+            <div class="class-item">🔹 <b>criterion:</b> Criterio para realizar las divisiones (ej: "entropy").</div>
+            <div class="class-item">🔹 <b>random_state:</b> Semilla aleatoria que permite obtener siempre el mismo resultado (ej: 0).</div>
+          </div>
+
+          <div class="class-section">
+            <div class="class-section-title">Métodos Principales</div>
+            <div class="class-item">🌱 <b>.fit(X, y):</b> Entrena el árbol de decisión usando los atributos X y la respuesta real y.</div>
+            <div class="class-item">🔍 <b>.predict(X):</b> Realiza predicciones (ŷ) para nuevos datos X.</div>
+            <div class="class-item">🎯 <b>.score(X, y):</b> Evalúa el modelo. Devuelve la precisión (accuracy).</div>
+          </div>
+        </div>
+
+        <div class="info-card-block purple" style="margin-top: 5px;">
+          <div class="info-title purple">📌 Conceptos Clave de Programación</div>
+          <ul class="info-list">
+            <li><b>¿Qué es una Clase?</b> Es el plano, plantilla o molde (<code>DecisionTreeClassifier</code>). Define la estructura y el comportamiento del modelo.</li>
+            <li><b>¿Qué es un Objeto / Instancia?</b> Es el elemento concreto creado a partir del molde (la variable <code>modelo</code>). Posee espacio en memoria y puede llamar a los métodos como <code>.fit()</code> o <code>.predict()</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 4: ESTRATEGIAS DE VALIDACIÓN -->
+  <div class="panel screen" id="screen5" style="display:none;">
+    <h2 class="panel-title">PASO 4: Estrategias de Validación y Funciones Clave (acá usamos solo una)</h2>
+    <p style="font-size: 15px; margin-top: 0; font-weight: bold; color: var(--blue);">SELECCIONA UNA ESTRATEGIA PARA VER SU CÓDIGO Y DETALLE DE FUNCIONES:</p>
+
+    <div class="btn-group">
+      <button class="option-btn active" onclick="showP5('e1', this)">ESTRATEGIA 1: Entrenamiento = Testeo</button>
+      <button class="option-btn" onclick="showP5('e2', this)">ESTRATEGIA 2: Hold-Out (train_test_split)</button>
+      <button class="option-btn" onclick="showP5('e3', this)">ESTRATEGIA 3: Validación Cruzada (cross_validate)</button>
+    </div>
+
+    <div class="grid-split">
+      <div><pre id="p5Code"></pre></div>
+      <div class="graphic-box" id="p5Graphic"></div>
+    </div>
+  </div>
+
+  <!-- PASO 5: EJECUCIÓN Y VARIABLES -->
+  <div class="panel screen" id="screen6" style="display:none;">
+    <h2 class="panel-title">PASO 5: Ejecución de Estrategias y Variables de Salida</h2>
+    <p style="font-size: 15px; margin-top: 0;">Analizamos qué guarda cada variable devuelta por las estrategias y las predicciones <b>ŷ</b>.</p>
+
+    <div class="btn-group">
+      <button class="option-btn active" onclick="showP6('ex1', this)">Ejecutar Estrategia 1</button>
+      <button class="option-btn" onclick="showP6('ex2', this)">Ejecutar Estrategia 2 (Hold-Out)</button>
+      <button class="option-btn" onclick="showP6('ex3', this)">Ejecutar Estrategia 3</button>
+    </div>
+
+    <div class="grid-split">
+      <div><pre id="p6Code"></pre></div>
+      <div class="graphic-box" id="p6Graphic"></div>
+    </div>
+  </div>
+
+  <!-- PASO 6: MÉTRICAS EXPLICADAS A FONDO -->
+  <div class="panel screen" id="screen7" style="display:none;">
+    <h2 class="panel-title">PASO 6: Métricas de Evaluación Explicadas a Fondo</h2>
+    <p style="font-size: 15px; margin-top: 0;">Entiende gráfica y conceptualmente la diferencia entre cada métrica para evaluar a <b>ŷ</b>.</p>
+
+    <div class="btn-group">
+      <button class="option-btn active" onclick="showP7('acc', this)">1. Accuracy (Exactitud Total)</button>
+      <button class="option-btn" onclick="showP7('prec', this)">2. Precision (Calidad de Calificación)</button>
+      <button class="option-btn" onclick="showP7('rec', this)">3. Recall (Capacidad de Detección)</button>
+    </div>
+
+    <div class="grid-split">
+      <div><pre id="p7Code"></pre></div>
+      <div class="graphic-box" id="p7Graphic"></div>
+    </div>
+  </div>
+
+  <!-- PASO 7: PREDECIR NUEVOS DATOS -->
+  <div class="panel screen" id="screen8" style="display:none;">
+    <h2 class="panel-title">PASO 7: ¿Cómo usar mi modelo con datos de entrada de texto?</h2>
+    <p style="font-size: 15px; margin-top: 0;">Proceso completo para tomar datos ingresados en texto plano por un usuario, codificarlos y predecir con el modelo entrenado.</p>
+
+    <div class="grid-split">
+      <div>
+<pre><span class="com"># ==========================================================</span>
+<span class="com"># ¿CÓMO USAR MI MODELO PARA PREDECIR NUEVAS ENTRADAS?</span>
+<span class="com"># ==========================================================</span>
+
+<span class="com"># 1. Simulación de campos de texto ingresados por el usuario</span>
+entrada_humedad = <span class="str">"Baja"</span>
+entrada_temperatura = <span class="str">"Alta"</span>
+entrada_clima = <span class="str">"Soleado"</span>
+
+<span class="com"># 2. Crear un DataFrame con el nuevo dato de texto</span>
+nuevo_dato = pd.DataFrame([{
+    <span class="str">"Humedad_suelo"</span>: entrada_humedad,
+    <span class="str">"Temperatura"</span>: entrada_temperatura,
+    <span class="str">"Clima"</span>: entrada_clima
+}])
+
+<span class="com"># 3. Codificar exactamente con las mismas columnas que se usó en X</span>
+nuevo_dato_codificado = pd.<span class="fn">get_dummies</span>(nuevo_dato)
+
+<span class="com"># Reindexar para asegurar que tenga TODAS las columnas de X (rellenando con False)</span>
+nuevo_dato_listo = nuevo_dato_codificado.<span class="fn">reindex</span>(columns=X.columns, fill_value=<span class="kw">False</span>)
+
+<span class="com"># 4. Realizar la predicción con el objeto modelo ya entrenado</span>
+prediccion_nueva = modelo.<span class="fn">predict</span>(nuevo_dato_listo)
+
+print(<span class="str">"Resultado de la predicción para el nuevo caso:"</span>, prediccion_nueva[<span class="str">0</span>])</pre>
+      </div>
+      <div class="graphic-box">
+        <h4 style="margin:0; color:#083d69; font-size:16px;">Flujo de Predicción en Vivo</h4>
+        <div style="width:100%; font-size:13px;">
+          <label style="font-weight:bold;">Campo Texto Humedad:</label>
+          <input type="text" class="input-box" value="Baja" readonly>
+          
+          <label style="font-weight:bold; margin-top:6px; display:block;">Campo Texto Temperatura:</label>
+          <input type="text" class="input-box" value="Alta" readonly>
+          
+          <label style="font-weight:bold; margin-top:6px; display:block;">Campo Texto Clima:</label>
+          <input type="text" class="input-box" value="Soleado" readonly>
+        </div>
+        <div style="width:100%; background:var(--green-light); border:1.5px solid var(--green); padding:12px; border-radius:6px; text-align:center; margin-top:5px;">
+          <span style="font-size:13px; font-weight:bold; color:var(--green);">Predicción (ŷ) generada por modelo.predict():</span>
+          <div style="font-size:20px; font-weight:800; color:var(--green); margin-top:2px;">"Sí" (Se debe regar)</div>
+        </div>
+        <div class="card-info">
+          <b>Explicación:</b> El modelo no entiende la palabra "Baja" directamente. Primero convierte la entrada de texto al formato de columnas numéricas que aprendió durante <code>modelo.fit()</code> y luego emite la respuesta.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentScreen = 1;
+const totalScreens = 8;
+
+const screenLabels = [
+  "PASO 1 de 7",
+  "PASO 2 de 7",
+  "PASO 3 de 7",
+  "EXPLICACIÓN CONCEPTUAL",
+  "PASO 4 de 7",
+  "PASO 5 de 7",
+  "PASO 6 de 7",
+  "PASO 7 de 7"
+];
+
+function updateNavigation() {
+  document.querySelectorAll('.screen').forEach((s, idx) => {
+    s.style.display = (idx + 1 === currentScreen) ? 'flex' : 'none';
+  });
+  document.getElementById('btnPrev').disabled = (currentScreen === 1);
+  document.getElementById('btnNext').disabled = (currentScreen === totalScreens);
+  
+  document.getElementById('stepTitle').textContent = screenLabels[currentScreen - 1];
+  
+  document.getElementById('progressBar').style.width = `${(currentScreen / totalScreens) * 100}%`;
+}
+
+function navigate(dir) {
+  currentScreen = Math.max(1, Math.min(totalScreens, currentScreen + dir));
+  updateNavigation();
+}
+
+// PASO 1: OPCS DE CARGA DE DATOS
+function showP1(type, btn) {
+  if(btn) {
+    btn.parentElement.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  const code = document.getElementById('p1Code');
+  const graph = document.getElementById('p1Graphic');
+
+  if(type === 'dic') {
+    code.innerHTML = `<span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+<span class="com"># OPCIÓN A: Creación mediante un diccionario manual</span>
+datos = {
+    <span class="str">"Humedad_suelo"</span>: [
+        <span class="str">"Baja"</span>, <span class="str">"Baja"</span>, <span class="str">"Baja"</span>, <span class="str">"Baja"</span>, <span class="str">"Baja"</span>, <span class="str">"Baja"</span>,
+        <span class="str">"Alta"</span>, <span class="str">"Alta"</span>, <span class="str">"Alta"</span>, <span class="str">"Alta"</span>, <span class="str">"Alta"</span>, <span class="str">"Alta"</span>,
+        <span class="str">"Media"</span>, <span class="str">"Media"</span>, <span class="str">"Media"</span>, <span class="str">"Media"</span>, <span class="str">"Media"</span>, <span class="str">"Media"</span>
+    ],
+    <span class="str">"Temperatura"</span>: [
+        <span class="str">"Alta"</span>, <span class="str">"Media"</span>, <span class="str">"Baja"</span>, <span class="str">"Alta"</span>, <span class="str">"Media"</span>, <span class="str">"Baja"</span>,
+        <span class="str">"Alta"</span>, <span class="str">"Media"</span>, <span class="str">"Baja"</span>, <span class="str">"Alta"</span>, <span class="str">"Media"</span>, <span class="str">"Baja"</span>,
+        <span class="str">"Alta"</span>, <span class="str">"Media"</span>, <span class="str">"Baja"</span>, <span class="str">"Alta"</span>, <span class="str">"Media"</span>, <span class="str">"Baja"</span>
+    ],
+    <span class="str">"Clima"</span>: [
+        <span class="str">"Soleado"</span>, <span class="str">"Nublado"</span>, <span class="str">"Lluvioso"</span>, <span class="str">"Nublado"</span>, <span class="str">"Lluvioso"</span>, <span class="str">"Soleado"</span>,
+        <span class="str">"Soleado"</span>, <span class="str">"Nublado"</span>, <span class="str">"Lluvioso"</span>, <span class="str">"Lluvioso"</span>, <span class="str">"Soleado"</span>, <span class="str">"Nublado"</span>,
+        <span class="str">"Soleado"</span>, <span class="str">"Soleado"</span>, <span class="str">"Lluvioso"</span>, <span class="str">"Nublado"</span>, <span class="str">"Nublado"</span>, <span class="str">"Nublado"</span>
+    ],
+    <span class="str">"Regar"</span>: [
+        <span class="str">"Sí"</span>, <span class="str">"Sí"</span>, <span class="str">"Sí"</span>, <span class="str">"Sí"</span>, <span class="str">"Sí"</span>, <span class="str">"Sí"</span>,
+        <span class="str">"No"</span>, <span class="str">"No"</span>, <span class="str">"No"</span>, <span class="str">"No"</span>, <span class="str">"No"</span>, <span class="str">"No"</span>,
+        <span class="str">"Sí"</span>, <span class="str">"Sí"</span>, <span class="str">"No"</span>, <span class="str">"Sí"</span>, <span class="str">"No"</span>, <span class="str">"No"</span>
+    ]
+}
+
+df = pd.DataFrame(datos)
+print(df)`;
+
+    graph.innerHTML = `
+      <h4 style="margin:0; color:#083d69; font-size:16px;">Vista del Dataset por Diccionario (18 Filas)</h4>
+      <div style="max-height: 200px; overflow-y: auto; width: 100%;">
+        <table class="demo-table">
+          <thead>
+            <tr><th>#</th><th>Humedad_suelo</th><th>Temperatura</th><th>Clima</th><th>Regar</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0</td><td>Baja</td><td>Alta</td><td>Soleado</td><td><b>Sí</b></td></tr>
+            <tr><td>1</td><td>Baja</td><td>Media</td><td>Nublado</td><td><b>Sí</b></td></tr>
+            <tr><td>...</td><td>...</td><td>...</td><td>...</td><td>...</td></tr>
+            <tr><td>6</td><td>Alta</td><td>Alta</td><td>Soleado</td><td><b>No</b></td></tr>
+            <tr><td>...</td><td>...</td><td>...</td><td>...</td><td>...</td></tr>
+            <tr><td>17</td><td>Media</td><td>Baja</td><td>Nublado</td><td><b>No</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-info">
+        <b>Explicación:</b> Permite construir el DataFrame directamente desde una estructura nativa de Python sin requerir archivos externos.
+      </div>`;
+  } else {
+    code.innerHTML = `<span class="kw">import</span> pandas <span class="kw">as</span> pd
+<span class="kw">from</span> google.colab <span class="kw">import</span> drive
+
+<span class="com"># OPCIÓN B: Importación desde Google Drive</span>
+drive.<span class="fn">mount</span>(<span class="str">'/content/drive'</span>)
+
+<span class="com"># Ruta al archivo en Google Drive</span>
+ruta = <span class="str">'/content/drive/MyDrive/datos_riego.csv'</span>
+
+df = pd.<span class="fn">read_csv</span>(ruta)
+print(df)`;
+
+    graph.innerHTML = `
+      <h4 style="margin:0; color:#083d69; font-size:16px;">Integración con Google Drive</h4>
+      <div style="width:100%; text-align:center; padding:12px; background:#f0f4f8; border-radius:6px;">
+        <p style="font-size:13.5px; margin:0;">📁 <b>Ruta asignada:</b> <code>/content/drive/MyDrive/datos_riego.csv</code></p>
+      </div>
+      <div class="card-info">
+        <b>Explicación:</b> Conecta el entorno de Google Colab con el almacenamiento en la nube para cargar datos estructurados en formato CSV.
+      </div>`;
+  }
+}
+
+// PASO 4: ESTRATEGIAS Y FUNCIONES
+function showP5(type, btn) {
+  if(btn) {
+    btn.parentElement.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  const code = document.getElementById('p5Code');
+  const graph = document.getElementById('p5Graphic');
+
+  if(type === 'e1') {
+    code.innerHTML = `<span class="com"># ESTRATEGIA 1: ENTRENAMIENTO = TESTEO</span>
+
+<span class="kw">def</span> <span class="fn">entrenamiento_prueba</span>(atributos, target):
+
+    modelo = DecisionTreeClassifier(
+        random_state=<span class="str">8</span>
+    )
+
+    <span class="com"># Entrena con todos los datos</span>
+    modelo.<span class="fn">fit</span>(
+        atributos,
+        target
+    )
+
+    <span class="com"># Predice utilizando los mismos atributos</span>
+    predicciones = modelo.<span class="fn">predict</span>(
+        atributos
+    )
+
+    <span class="kw">return</span> modelo, target, predicciones`;
+
+    graph.innerHTML = `
+      <h4 style="margin:0; color:#083d69; font-size:16px;">¿Por qué retornamos estas variables?</h4>
+      <div class="info-card-block blue">
+        <div class="info-title blue">💡 Explicación del <code>return modelo, target, predicciones</code></div>
+        <p>Retornamos estos tres elementos porque los necesitamos en el flujo del programa por los siguientes motivos:</p>
+        <ul class="info-list">
+          <li><b><code>modelo</code>:</b> Es el objeto ya entrenado con el método <code>.fit()</code>. Nos interesa retornarlo para conservarlo y usarlo después para predecir sobre datos totalmente nuevos.</li>
+          <li><b><code>target</code> (y):</b> Son los valores reales de la respuesta. Nos interesa retornarlo para usarlo como la "respuesta correcta" al calcular las métricas.</li>
+          <li><b><code>predicciones</code> (ŷ):</b> Son los resultados que el modelo generó con <code>.predict()</code>. Nos interesa retornarlo para compararlo lado a lado contra los valores reales.</li>
+        </ul>
+      </div>`;
+  } else if(type === 'e2') {
+    code.innerHTML = `<span class="com"># ESTRATEGIA 2: HOLD-OUT</span>
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> train_test_split
+
+<span class="kw">def</span> <span class="fn">hold_out</span>(atributos, target):
+
+    <span class="com"># Divide los datos en entrenamiento y prueba</span>
+    atributos_train, atributos_test, target_train, target_test = <span class="fn">train_test_split</span>(
+        atributos,
+        target,
+        test_size=<span class="str">0.30</span>,
+        random_state=<span class="str">8</span>,
+        stratify=target
+    )
+
+    modelo = DecisionTreeClassifier(
+        random_state=<span class="str">8</span>
+    )
+
+    modelo.<span class="fn">fit</span>(atributos_train, target_train)
+    predicciones = modelo.<span class="fn">predict</span>(atributos_test)
+
+    <span class="kw">return</span> modelo, target_test, predicciones`;
+
+    graph.innerHTML = `
+      <div class="info-card-block green">
+        <div class="info-title green">✂️ Detalle de la Función train_test_split()</div>
+        <p style="margin:0 0 6px 0;">Es una función de <code>sklearn.model_selection</code> que parte los datos en conjuntos independientes.</p>
+        <p style="margin:0 0 4px 0;"><b>📥 ¿Qué recibe?</b></p>
+        <ul class="info-list" style="margin-bottom:8px;">
+          <li><code>atributos</code> (X) y <code>target</code> (y).</li>
+          <li><code>test_size=0.30</code>: Reserva el 30% de datos para evaluar.</li>
+          <li><code>stratify=target</code>: Mantiene la proporción de 'Sí' y 'No' en ambas partes.</li>
+        </ul>
+        <p style="margin:0 0 4px 0;"><b>📤 ¿Qué devuelve cada una de sus 4 variables?</b></p>
+      </div>
+      <table class="demo-table">
+        <thead>
+          <tr><th>Variable</th><th>Contenido</th><th>Uso Principal</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><b>atributos_train</b></td><td>70% de las filas de X</td><td>Para que el modelo aprenda en <code>.fit()</code></td></tr>
+          <tr><td><b>atributos_test</b></td><td>30% restante de X</td><td>Para generar <code>.predict()</code> a ciegas</td></tr>
+          <tr><td><b>target_train</b></td><td>70% de las respuestas de y</td><td>Acompaña a X_train para ajustar el modelo</td></tr>
+          <tr><td><b>target_test</b></td><td>30% de las respuestas de y</td><td>Es la clave con la que se comparan las métricas</td></tr>
+        </tbody>
+      </table>`;
+  } else {
+    code.innerHTML = `<span class="com"># ESTRATEGIA 3: VALIDACIÓN CRUZADA</span>
+
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> cross_validate
+
+<span class="kw">def</span> <span class="fn">validacion_cruzada</span>(atributos, target):
+
+    modelo = DecisionTreeClassifier(
+        random_state=<span class="str">42</span>
+    )
+
+    resultados = <span class="fn">cross_validate</span>(
+        modelo,
+        atributos,
+        target,
+        cv=<span class="str">6</span>,
+        return_train_score=<span class="kw">True</span>
+    )
+
+    <span class="kw">return</span> resultados`;
+
+    graph.innerHTML = `
+      <div class="info-card-block blue">
+        <div class="info-title blue">🔄 Detalle de cross_validate() y return_train_score</div>
+        <p><b>📥 ¿Qué recibe?</b> Recibe el <code>modelo</code>, los <code>atributos</code>, el <code>target</code> y <code>cv=6</code> (divide el dataset en 6 pliegues o folds).</p>
+        
+        <div style="background:#fff; border:1px solid #b2c8d9; border-radius:6px; padding:10px; margin:8px 0;">
+          <b style="color:var(--purple); font-size:14px;">¿Qué es return_train_score=True?</b>
+          <p style="margin:4px 0 0 0; font-size:13px;">
+            Es un parámetro booleano. Si se configura en <b>True</b>, obliga a la función a evaluar y devolver el rendimiento del modelo no solo sobre el conjunto de testeo de cada pliegue, sino <b>también sobre el conjunto de entrenamiento de cada pliegue</b>.
+          </p>
+        </div>
+
+        <p style="margin:6px 0 2px 0;"><b>💡 ¿Para qué nos sirve esta opción?</b></p>
+        <p style="margin:0; font-size:13px;">
+          Nos sirve para detectar <b>Overfitting (sobreajuste)</b>. Si el score en entrenamiento da 100% pero el score en test da 60%, sabremos que el modelo memorizó los datos en lugar de aprender patrones generales.
+        </p>
+      </div>`;
+  }
+}
+
+// PASO 5: EJECUCIÓN Y DETALLE DE VARIABLES
+function showP6(type, btn) {
+  if(btn) {
+    btn.parentElement.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  const code = document.getElementById('p6Code');
+  const graph = document.getElementById('p6Graphic');
+
+  if(type === 'ex1') {
+    code.innerHTML = `<span class="com"># ESTRATEGIA 1 la ejecutamos</span>
+
+modelo, valores_reales, predicciones = entrenamiento_prueba(X, y)
+
+print(<span class="str">"Valores reales:"</span>)
+print(valores_reales.values)
+
+print(<span class="str">"Predicciones:"</span>)
+print(predicciones)`;
+
+    graph.innerHTML = `
+      <h4 style="margin:0; color:#083d69; font-size:16px;">Resultado Estrategia 1</h4>
+      <div style="font-size:12.5px; width:100%;">
+        <p style="margin:2px 0;"><b>Valores reales (y):</b></p>
+        <div style="background:#fff; padding:6px; border:1px solid #ccc; font-family:monospace; font-size:11px;">['Sí' 'Sí' 'Sí' 'Sí' 'Sí' 'Sí' 'No' 'No' 'No' 'No' 'No' 'No' 'Sí' 'Sí' 'No' 'Sí' 'No' 'No']</div>
+        <p style="margin:8px 0 2px 0;"><b>Predicciones (ŷ):</b></p>
+        <div style="background:#fff; padding:6px; border:1px solid #ccc; font-family:monospace; color:green; font-size:11px;">['Sí' 'Sí' 'Sí' 'Sí' 'Sí' 'Sí' 'No' 'No' 'No' 'No' 'No' 'No' 'Sí' 'Sí' 'No' 'Sí' 'No' 'No']</div>
+      </div>
+      <div class="card-info">
+        <b>ŷ (y-gorro):</b> Es el símbolo matemático que representa las <b>predicciones</b> generadas por el modelo.
+      </div>`;
+  } else if(type === 'ex2') {
+    code.innerHTML = `<span class="com"># ESTRATEGIA 2 la ejecutamos</span>
+
+modelo, valores_reales, predicciones = hold_out(X, y)
+
+print(<span class="str">"Valores reales:"</span>)
+print(valores_reales.values)
+
+print(<span class="str">"Predicciones:"</span>)
+print(predicciones)`;
+
+    graph.innerHTML = `
+      <h4 style="margin:0; color:#083d69; font-size:16px;">Resumen de Variables de Salida</h4>
+      <div style="font-size:13px; width:100%; text-align:left; line-height:1.5;">
+        <p style="margin:3px 0;"><b>X_train:</b> Atributos de entrenamiento.</p>
+        <p style="margin:3px 0;"><b>X_test:</b> Atributos para testear.</p>
+        <p style="margin:3px 0;"><b>y_train:</b> Target de entrenamiento.</p>
+        <p style="margin:3px 0;"><b>y_test:</b> Target de prueba (reales).</p>
+      </div>
+      <div style="font-size:12.5px; width:100%; margin-top:8px; border-top:1px dashed #ccc; padding-top:8px;">
+        <p style="margin:2px 0;"><b>Comparación en Test:</b></p>
+        <p style="margin:6px 0 2px 0;"><b>Valores reales (y_test):</b> ['No' 'No' 'Sí' 'No' 'Sí' 'Sí']</p>
+        <p style="margin:2px 0; color:#146bd1;"><b>Predicciones (ŷ):</b> ['No' 'No' 'Sí' 'No' <b style="color:red;">'No'</b> 'Sí']</p>
+      </div>`;
+  } else {
+    code.innerHTML = `<span class="com"># ESTRATEGIA 3 la ejecutamos con métricas</span>
+
+resultados = validacion_cruzada(X, y)
+
+print(<span class="str">"Accuracy:"</span>, resultados[<span class="str">"test_accuracy"</span>].mean())
+print(<span class="str">"Precision:"</span>, resultados[<span class="str">"test_precision"</span>].mean())
+print(<span class="str">"Recall:"</span>, resultados[<span class="str">"test_recall"</span>].mean())`;
+
+    graph.innerHTML = `
+      <h4 style="margin:0; color:#083d69; font-size:16px;">Resultado Validación Cruzada</h4>
+      <div style="font-size:13.5px; width:100%; line-height:1.6;">
+        <p style="margin:3px 0;"><b>Accuracy Promedio:</b> 0.833 (83.3%)</p>
+        <p style="margin:3px 0;"><b>Precision Promedio:</b> 0.750 (75.0%)</p>
+        <p style="margin:3px 0;"><b>Recall Promedio:</b> 0.833 (83.3%)</p>
+      </div>
+      <div class="card-info">
+        Proporciona el promedio global de rendimiento a lo largo de las 6 particiones de prueba.
+      </div>`;
+  }
+}
+
+// PASO 6: MÉTRICAS
+function showP7(type, btn) {
+  if(btn) {
+    btn.parentElement.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  const code = document.getElementById('p7Code');
+  const graph = document.getElementById('p7Graphic');
+
+  if(type === 'acc') {
+    code.innerHTML = `<span class="com"># Métrica 1: ACCURACY (Exactitud Global)</span>
+<span class="com"># Mide el porcentaje total de predicciones correctas sobre el universo de datos.</span>
+
+accuracy = accuracy_score(
+    valores_reales,
+    predicciones
+)
+
+print(<span class="str">"Accuracy:"</span>, accuracy)`;
+
+    graph.innerHTML = `
+      <h4 style="margin:0; color:#083d69; font-size:16px;">Accuracy (Exactitud General)</h4>
+      
+      <div class="cm-grid">
+        <div class="cm-cell vp"><b>Verdaderos 'Sí' (VP)</b><br>Correctos</div>
+        <div class="cm-cell fp">Falsos 'Sí' (FP)<br>Errores</div>
+        <div class="cm-cell fn-cell">Falsos 'No' (FN)<br>Errores</div>
+        <div class="cm-cell vn"><b>Verdaderos 'No' (VN)</b><br>Correctos</div>
+      </div>
+
+      <div style="text-align:center; background:#eef7ff; padding:10px; border-radius:6px; width:100%; font-size:13px; border:1px solid #146bd1;">
+        <b>Fórmula Visual:</b><br>(VP + VN) / Total de Casos
+      </div>
+
+      <div class="card-info">
+        <b>¿Qué nos dice profundamente?</b> Es la mirada global. Responde a: <i>" De todas las respuestas que dio el modelo (sean 'Sí' o 'No'), ¿qué porcentaje fueron correctas?"</i>. Funciona muy bien cuando las clases están equilibradas.
+      </div>`;
+  } else if(type === 'prec') {
+    code.innerHTML = `<span class="com"># Métrica 2: PRECISION (Calidad de la Alarma)</span>
+<span class="com"># Evalúa el grado de certeza cuando el modelo da un dictamen positivo.</span>
+
+precision = precision_score(
+    valores_reales,
+    predicciones,
+    pos_label=<span class="str">"Sí"</span>
+)
+
+print(<span class="str">"Precision:"</span>, precision)`;
+
+    graph.innerHTML = `
+      <h4 style="margin:0; color:#083d69; font-size:16px;">Precision (Confiabilidad del 'Sí')</h4>
+      
+      <div class="cm-grid">
+        <div class="cm-cell vp" style="border: 3px solid #0f5132;"><b>Verdaderos 'Sí' (VP)</b><br>Aciertos 'Sí'</div>
+        <div class="cm-cell fp" style="border: 3px solid #842029;"><b>Falsos 'Sí' (FP)</b><br>Falsas Alarmas</div>
+        <div class="cm-cell fn-cell" style="opacity:0.3;">Falsos 'No' (FN)<br>Ignorado</div>
+        <div class="cm-cell vn" style="opacity:0.3;">Verdaderos 'No' (VN)<br>Ignorado</div>
+      </div>
+
+      <div style="text-align:center; background:#eaf8ef; padding:10px; border-radius:6px; width:100%; font-size:13px; border:1px solid #1f7a45;">
+        <b>Fórmula Visual:</b><br>VP / (VP + FP)
+      </div>
+
+      <div class="card-info">
+        <b>¿Qué nos dice profundamente?</b> Evalúa la <b>calidad</b> de la predicción. Responde a: <i>"Cada vez que el modelo afirmó 'SÍ hay que regar', ¿qué tan seguro es estar de acuerdo con él?"</i>. Penaliza fuertemente los Falsos Positivos (falsas alarmas).
+      </div>`;
+  } else {
+    code.innerHTML = `<span class="com"># Métrica 3: RECALL (Sensibilidad / Exhaustividad)</span>
+<span class="com"># Evalúa la capacidad del modelo para no omitir ningún caso real.</span>
+
+recall = recall_score(
+    valores_reales,
+    predicciones,
+    pos_label=<span class="str">"Sí"</span>
+)
+
+print(<span class="str">"Recall:"</span>, recall)`;
+
+    graph.innerHTML = `
+      <h4 style="margin:0; color:#083d69; font-size:16px;">Recall (Alcance / Cobertura)</h4>
+      
+      <div class="cm-grid">
+        <div class="cm-cell vp" style="border: 3px solid #0f5132;"><b>Verdaderos 'Sí' (VP)</b><br>Detectados</div>
+        <div class="cm-cell fp" style="opacity:0.3;">Falsos 'Sí' (FP)<br>Ignorado</div>
+        <div class="cm-cell fn-cell" style="border: 3px solid #664d03;"><b>Falsos 'No' (FN)</b><br>Omitidos / Perdidos</div>
+        <div class="cm-cell vn" style="opacity:0.3;">Verdaderos 'No' (VN)<br>Ignorado</div>
+      </div>
+
+      <div style="text-align:center; background:#fff1df; padding:10px; border-radius:6px; width:100%; font-size:13px; border:1px solid #c06b00;">
+        <b>Fórmula Visual:</b><br>VP / (VP + FN)
+      </div>
+
+      <div class="card-info">
+        <b>¿Qué nos dice profundamente?</b> Evalúa la <b>cobertura</b>. Responde a: <i>"De todos los momentos reales en que la planta SÍ necesitaba agua, ¿cuántos logró encontrar el modelo sin pasar por alto?"</i>. Penaliza los casos no detectados (Falsos Negativos).
+      </div>`;
+  }
+}
+
+// Inicialización de componentes
+showP1('dic');
+showP5('e1');
+showP6('ex1');
+showP7('acc');
+updateNavigation();
+</script>
+</body>
+</html>
