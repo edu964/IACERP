@@ -239,7 +239,7 @@ print(df_codificado)</pre>
           </table>
         </div>
         <div class="card-info">
-          <b>Explicación:</b> Cada valor categórico se convierte en una columna binaria (True/False o 1/0) para que la matemática del modelo pueda procesarla.
+          <b>Fundamentos:</b> Cada valor categórico se convierte en una columna binaria (True/False o 1/0) para que la matemática del modelo pueda procesarla.
         </div>
       </div>
     </div>
@@ -273,7 +273,7 @@ y = df_codificado[<span class="str">"Regar"</span>]</pre>
           </div>
         </div>
         <div class="card-info">
-          <b>Explicación:</b> <code>X</code> representa las preguntas/evidencias y <code>y</code> representa la respuesta correcta que deseamos aprender a predecir.
+          <b>Fundamentos:</b> <code>X</code> representa las preguntas/evidencias y <code>y</code> representa la respuesta correcta que deseamos aprender a predecir.
         </div>
       </div>
     </div>
@@ -432,7 +432,7 @@ print(<span class="str">"Resultado de la predicción para el nuevo caso:"</span>
           <div style="font-size:20px; font-weight:800; color:var(--green); margin-top:2px;">"Sí" (Se debe regar)</div>
         </div>
         <div class="card-info">
-          <b>Explicación:</b> El modelo no entiende la palabra "Baja" directamente. Primero convierte la entrada de texto al formato de columnas numéricas que aprendió durante <code>modelo.fit()</code> y luego emite la respuesta.
+          <b>Fundamentos:</b> El modelo no entiende la palabra "Baja" directamente. Primero convierte la entrada de texto al formato de columnas numéricas que aprendió durante <code>modelo.fit()</code> y luego emite la respuesta.
         </div>
       </div>
     </div>
@@ -454,6 +454,17 @@ const screenLabels = [
   "PASO 6 de 7",
   "PASO 7 de 7"
 ];
+
+const fundamentosReturnBlock = `
+  <div class="info-card-block blue" style="margin-top: 10px;">
+    <div class="info-title blue">💡 Fundamentos del <code>return modelo, target, predicciones</code></div>
+    <p>Retornamos estos tres elementos porque los necesitamos en el flujo del programa por los siguientes motivos:</p>
+    <ul class="info-list">
+      <li><b>modelo:</b> Es el objeto ya entrenado con el método <code>.fit()</code>. Nos interesa retornarlo para conservarlo y usarlo después para predecir sobre datos totalmente nuevos.</li>
+      <li><b>target (y):</b> Son los valores reales de la respuesta. Nos interesa retornarlo para usarlo como la "respuesta correcta" al calcular las métricas.</li>
+      <li><b>predicciones (ŷ):</b> Son los resultados que el modelo generó con <code>.predict()</code>. Nos interesa retornarlo para compararlo lado a lado contra los valores reales.</li>
+    </ul>
+  </div>`;
 
 function updateNavigation() {
   document.querySelectorAll('.screen').forEach((s, idx) => {
@@ -529,7 +540,7 @@ print(df)`;
         </table>
       </div>
       <div class="card-info">
-        <b>Explicación:</b> Permite construir el DataFrame directamente desde una estructura nativa de Python sin requerir archivos externos.
+        <b>Fundamentos:</b> Permite construir el DataFrame directamente desde una estructura nativa de Python sin requerir archivos externos.
       </div>`;
   } else {
     code.innerHTML = `<span class="kw">import</span> pandas <span class="kw">as</span> pd
@@ -550,7 +561,7 @@ print(df)`;
         <p style="font-size:13.5px; margin:0;">📁 <b>Ruta asignada:</b> <code>/content/drive/MyDrive/datos_riego.csv</code></p>
       </div>
       <div class="card-info">
-        <b>Explicación:</b> Conecta el entorno de Google Colab con el almacenamiento en la nube para cargar datos estructurados en formato CSV.
+        <b>Fundamentos:</b> Conecta el entorno de Google Colab con el almacenamiento en la nube para cargar datos estructurados en formato CSV.
       </div>`;
   }
 }
@@ -586,17 +597,7 @@ function showP5(type, btn) {
 
     <span class="kw">return</span> modelo, target, predicciones`;
 
-    graph.innerHTML = `
-      <h4 style="margin:0; color:#083d69; font-size:16px;">¿Por qué retornamos estas variables?</h4>
-      <div class="info-card-block blue">
-        <div class="info-title blue">💡 Explicación del <code>return modelo, target, predicciones</code></div>
-        <p>Retornamos estos tres elementos porque los necesitamos en el flujo del programa por los siguientes motivos:</p>
-        <ul class="info-list">
-          <li><b><code>modelo</code>:</b> Es el objeto ya entrenado con el método <code>.fit()</code>. Nos interesa retornarlo para conservarlo y usarlo después para predecir sobre datos totalmente nuevos.</li>
-          <li><b><code>target</code> (y):</b> Son los valores reales de la respuesta. Nos interesa retornarlo para usarlo como la "respuesta correcta" al calcular las métricas.</li>
-          <li><b><code>predicciones</code> (ŷ):</b> Son los resultados que el modelo generó con <code>.predict()</code>. Nos interesa retornarlo para compararlo lado a lado contra los valores reales.</li>
-        </ul>
-      </div>`;
+    graph.innerHTML = fundamentosReturnBlock;
   } else if(type === 'e2') {
     code.innerHTML = `<span class="com"># ESTRATEGIA 2: HOLD-OUT</span>
 <span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> train_test_split
@@ -622,7 +623,7 @@ function showP5(type, btn) {
     <span class="kw">return</span> modelo, target_test, predicciones`;
 
     graph.innerHTML = `
-      <div class="info-card-block green">
+      <div class="info-card-block green" style="margin-bottom:0;">
         <div class="info-title green">✂️ Detalle de la Función train_test_split()</div>
         <p style="margin:0 0 6px 0;">Es una función de <code>sklearn.model_selection</code> que parte los datos en conjuntos independientes.</p>
         <p style="margin:0 0 4px 0;"><b>📥 ¿Qué recibe?</b></p>
@@ -631,19 +632,7 @@ function showP5(type, btn) {
           <li><code>test_size=0.30</code>: Reserva el 30% de datos para evaluar.</li>
           <li><code>stratify=target</code>: Mantiene la proporción de 'Sí' y 'No' en ambas partes.</li>
         </ul>
-        <p style="margin:0 0 4px 0;"><b>📤 ¿Qué devuelve cada una de sus 4 variables?</b></p>
-      </div>
-      <table class="demo-table">
-        <thead>
-          <tr><th>Variable</th><th>Contenido</th><th>Uso Principal</th></tr>
-        </thead>
-        <tbody>
-          <tr><td><b>atributos_train</b></td><td>70% de las filas de X</td><td>Para que el modelo aprenda en <code>.fit()</code></td></tr>
-          <tr><td><b>atributos_test</b></td><td>30% restante de X</td><td>Para generar <code>.predict()</code> a ciegas</td></tr>
-          <tr><td><b>target_train</b></td><td>70% de las respuestas de y</td><td>Acompaña a X_train para ajustar el modelo</td></tr>
-          <tr><td><b>target_test</b></td><td>30% de las respuestas de y</td><td>Es la clave con la que se comparan las métricas</td></tr>
-        </tbody>
-      </table>`;
+      </div>` + fundamentosReturnBlock;
   } else {
     code.innerHTML = `<span class="com"># ESTRATEGIA 3: VALIDACIÓN CRUZADA</span>
 
@@ -666,22 +655,11 @@ function showP5(type, btn) {
     <span class="kw">return</span> resultados`;
 
     graph.innerHTML = `
-      <div class="info-card-block blue">
+      <div class="info-card-block blue" style="margin-bottom:0;">
         <div class="info-title blue">🔄 Detalle de cross_validate() y return_train_score</div>
-        <p><b>📥 ¿Qué recibe?</b> Recibe el <code>modelo</code>, los <code>atributos</code>, el <code>target</code> y <code>cv=6</code> (divide el dataset en 6 pliegues o folds).</p>
-        
-        <div style="background:#fff; border:1px solid #b2c8d9; border-radius:6px; padding:10px; margin:8px 0;">
-          <b style="color:var(--purple); font-size:14px;">¿Qué es return_train_score=True?</b>
-          <p style="margin:4px 0 0 0; font-size:13px;">
-            Es un parámetro booleano. Si se configura en <b>True</b>, obliga a la función a evaluar y devolver el rendimiento del modelo no solo sobre el conjunto de testeo de cada pliegue, sino <b>también sobre el conjunto de entrenamiento de cada pliegue</b>.
-          </p>
-        </div>
-
-        <p style="margin:6px 0 2px 0;"><b>💡 ¿Para qué nos sirve esta opción?</b></p>
-        <p style="margin:0; font-size:13px;">
-          Nos sirve para detectar <b>Overfitting (sobreajuste)</b>. Si el score en entrenamiento da 100% pero el score en test da 60%, sabremos que el modelo memorizó los datos en lugar de aprender patrones generales.
-        </p>
-      </div>`;
+        <p style="margin:0 0 6px 0;"><b>📥 ¿Qué recibe?</b> Recibe el <code>modelo</code>, los <code>atributos</code>, el <code>target</code> y <code>cv=6</code> (divide el dataset en 6 pliegues o folds).</p>
+        <p style="margin:0; font-size:13px;"><b>return_train_score=True:</b> Evalúa y devuelve el rendimiento del modelo no solo sobre el conjunto de testeo de cada pliegue, sino también sobre el conjunto de entrenamiento de cada pliegue para detectar Overfitting.</p>
+      </div>` + fundamentosReturnBlock;
   }
 }
 
@@ -714,7 +692,7 @@ print(predicciones)`;
         <div style="background:#fff; padding:6px; border:1px solid #ccc; font-family:monospace; color:green; font-size:11px;">['Sí' 'Sí' 'Sí' 'Sí' 'Sí' 'Sí' 'No' 'No' 'No' 'No' 'No' 'No' 'Sí' 'Sí' 'No' 'Sí' 'No' 'No']</div>
       </div>
       <div class="card-info">
-        <b>ŷ (y-gorro):</b> Es el símbolo matemático que representa las <b>predicciones</b> generadas por el modelo.
+        <b>Fundamentos:</b> ŷ (y-gorro) representa las predicciones generadas por el modelo al evaluar los datos de entrada.
       </div>`;
   } else if(type === 'ex2') {
     code.innerHTML = `<span class="com"># ESTRATEGIA 2 la ejecutamos</span>
@@ -757,7 +735,7 @@ print(<span class="str">"Recall:"</span>, resultados[<span class="str">"test_rec
         <p style="margin:3px 0;"><b>Recall Promedio:</b> 0.833 (83.3%)</p>
       </div>
       <div class="card-info">
-        Proporciona el promedio global de rendimiento a lo largo de las 6 particiones de prueba.
+        <b>Fundamentos:</b> Proporciona el promedio global de rendimiento a lo largo de las 6 particiones de prueba.
       </div>`;
   }
 }
@@ -797,7 +775,7 @@ print(<span class="str">"Accuracy:"</span>, accuracy)`;
       </div>
 
       <div class="card-info">
-        <b>¿Qué nos dice profundamente?</b> Es la mirada global. Responde a: <i>" De todas las respuestas que dio el modelo (sean 'Sí' o 'No'), ¿qué porcentaje fueron correctas?"</i>. Funciona muy bien cuando las clases están equilibradas.
+        <b>Fundamentos:</b> Es la mirada global. Responde a: <i>"De todas las respuestas que dio el modelo (sean 'Sí' o 'No'), ¿qué porcentaje fueron correctas?"</i>. Funciona muy bien cuando las clases están equilibradas.
       </div>`;
   } else if(type === 'prec') {
     code.innerHTML = `<span class="com"># Métrica 2: PRECISION (Calidad de la Alarma)</span>
@@ -826,7 +804,7 @@ print(<span class="str">"Precision:"</span>, precision)`;
       </div>
 
       <div class="card-info">
-        <b>¿Qué nos dice profundamente?</b> Evalúa la <b>calidad</b> de la predicción. Responde a: <i>"Cada vez que el modelo afirmó 'SÍ hay que regar', ¿qué tan seguro es estar de acuerdo con él?"</i>. Penaliza fuertemente los Falsos Positivos (falsas alarmas).
+        <b>Fundamentos:</b> Evalúa la <b>calidad</b> de la predicción. Responde a: <i>"Cada vez que el modelo afirmó 'SÍ hay que regar', ¿qué tan seguro es estar de acuerdo con él?"</i>. Penaliza fuertemente los Falsos Positivos (falsas alarmas).
       </div>`;
   } else {
     code.innerHTML = `<span class="com"># Métrica 3: RECALL (Sensibilidad / Exhaustividad)</span>
@@ -855,7 +833,7 @@ print(<span class="str">"Recall:"</span>, recall)`;
       </div>
 
       <div class="card-info">
-        <b>¿Qué nos dice profundamente?</b> Evalúa la <b>cobertura</b>. Responde a: <i>"De todos los momentos reales en que la planta SÍ necesitaba agua, ¿cuántos logró encontrar el modelo sin pasar por alto?"</i>. Penaliza los casos no detectados (Falsos Negativos).
+        <b>Fundamentos:</b> Evalúa la <b>cobertura</b>. Responde a: <i>"De todos los momentos reales en que la planta SÍ necesitaba agua, ¿cuántos logró encontrar el modelo sin pasar por alto?"</i>. Penaliza los casos no detectados (Falsos Negativos).
       </div>`;
   }
 }
