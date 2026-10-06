@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador de Redes Neuronales - Paso a Paso</title>
+<style>
+:root {
+  --blue: #0f4f82; --blue-light: #eaf4fb;
+  --purple: #7040c6; --purple-light: #f3edff;
+  --green: #1f7a45; --green-light: #eaf8ef;
+  --red: #c23c3c; --red-light: #fdecec;
+  --orange: #c06b00; --orange-light: #fff1df;
+  --ink: #19374f; --muted: #687f91; --border: #d8e3ea;
+  --code-bg: #1e1e1e;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  width: 100%; height: 100%; margin: 0; padding: 0;
+  background: #edf3f8; font-family: 'Segoe UI', system-ui, sans-serif;
+  color: var(--ink); display: flex; flex-direction: column; overflow-x: hidden;
+}
+
+header {
+  background: #fff; padding: 10px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+}
+h1 { margin: 0; color: #073f6c; font-size: 20px; }
+.sub { color: #61788a; font-size: 12px; font-weight: 600; }
+
+.controls {
+  padding: 10px 20px; display: flex; gap: 10px; align-items: center;
+  background: #edf3f8; flex-shrink: 0; flex-wrap: wrap;
+}
+button.nav-btn {
+  border: 0; border-radius: 6px; padding: 8px 16px; background: #146bd1;
+  color: #fff; font-weight: 800; font-size: 13px; cursor: pointer; transition: 0.2s;
+}
+button.nav-btn:hover { background: #0f52a3; }
+button.nav-btn:disabled { background: #a5b9cb; cursor: not-allowed; }
+button.gray { background: #667986; }
+button.gray:hover { background: #4d5c67; }
+
+.progress {
+  margin: 0 20px 10px; height: 6px; background: #dce6ee; border-radius: 10px; overflow: hidden;
+}
+.bar { height: 100%; background: #1872c7; width: 11.11%; transition: 0.35s; }
+
+.main-content {
+  margin: 0 20px 20px; flex: 1; display: flex; flex-direction: column; min-height: 0; gap: 15px;
+}
+
+.panel {
+  background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+}
+
+.panel-title {
+  font-size: 18px; font-weight: 800; color: #083d69; margin-top: 0; margin-bottom: 10px;
+  border-bottom: 2px solid var(--blue-light); padding-bottom: 8px;
+}
+
+.btn-group { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+.option-btn {
+  padding: 10px 18px; border: 2px solid #b2c8d9; background: #f8fbfd;
+  border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; color: var(--ink);
+  transition: all 0.2s;
+}
+.option-btn:hover { border-color: #146bd1; background: #eef7ff; }
+.option-btn.active { border-color: #146bd1; background: #146bd1; color: #fff; }
+
+.grid-split {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1;
+}
+@media (max-width: 850px) { .grid-split { grid-template-columns: 1fr; } }
+
+pre {
+  background: var(--code-bg); color: #d4d4d4; padding: 15px; border-radius: 8px;
+  font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; line-height: 1.5;
+  overflow-x: auto; margin: 0; height: 100%; box-sizing: border-box;
+}
+.kw { color: #569cd6; font-weight: bold; }
+.str { color: #ce9178; }
+.com { color: #6a9955; font-style: italic; }
+.fn { color: #dcdcaa; }
+.num { color: #b5cea8; }
+
+.graphic-box {
+  background: #f8fbfe; border: 2px solid #c9d9e5; border-radius: 10px; padding: 15px;
+  display: flex; flex-direction: column; justify-content: flex-start; align-items: center; gap: 12px;
+}
+
+.card-info {
+  background: #fff; border: 1.5px solid #c8dbe8; border-radius: 8px; padding: 14px; width: 100%;
+  font-size: 13.5px; line-height: 1.5; color: #19374f;
+}
+
+.input-box {
+  width: 100%; padding: 8px; border: 1px solid #b2c8d9; border-radius: 6px; font-size: 13px; margin-top: 4px;
+}
+
+.info-card-block {
+  width: 100%; background: #ffffff; border-radius: 10px; border: 2px solid #b2c8d9;
+  padding: 14px; margin-bottom: 10px; font-size: 13.5px; line-height: 1.5;
+}
+.info-card-block.purple { border-color: var(--purple); background: #faf8ff; }
+.info-card-block.blue { border-color: #146bd1; background: #f4f8fd; }
+.info-card-block.green { border-color: var(--green); background: #f2faf5; }
+.info-card-block.orange { border-color: var(--orange); background: #fffbf5; }
+
+.info-title {
+  font-weight: 800; font-size: 15px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+}
+.info-title.purple { color: var(--purple); }
+.info-title.blue { color: #083d69; }
+.info-title.green { color: var(--green); }
+.info-title.orange { color: var(--orange); }
+
+.info-list { margin: 0; padding-left: 18px; }
+.info-list li { margin-bottom: 6px; }
+
+.val-badge {
+  display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-family: monospace;
+}
+.val-blue { background: var(--blue-light); color: var(--blue); }
+.val-purple { background: var(--purple-light); color: var(--purple); }
+.val-green { background: var(--green-light); color: var(--green); }
+.val-orange { background: var(--orange-light); color: var(--orange); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Simulador de Redes Neuronales</h1>
+  <div class="sub">Perceptrón Simple y Entrenamiento con Backpropagation</div>
+</header>
+
+<div class="controls">
+  <button class="nav-btn gray" id="btnPrev" onclick="navigate(-1)">◀ Anterior</button>
+  <button class="nav-btn" id="btnNext" onclick="navigate(1)">Siguiente ▶</button>
+  <span style="font-weight: 800; font-size: 14px; color: #083d69; margin-left: auto;" id="stepTitle">PASO 1 de 9</span>
+</div>
+
+<div class="progress"><div class="bar" id="progressBar"></div></div>
+
+<div class="main-content">
+
+  <!-- PASO 1: LAS ENTRADAS -->
+  <div class="panel screen" id="screen1">
+    <h2 class="panel-title">PASO 1: Las Entradas (x)</h2>
+    <p style="font-size: 15px; margin-top: 0;">Representación numérica de las características de la planta para alimentar la red neuronal.</p>
+
+    <div class="grid-split">
+      <div>
+<pre><span class="com"># Entrada codificada numéricamente para la red</span>
+<span class="com"># Humedad del suelo (x1): 0.20 (Baja / Seco)</span>
+<span class="com"># Temperatura (x2): 0.80 (Alta / Calor)</span>
+<span class="com"># Condición Climática (x3): 1.00 (Soleado)</span>
+
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+
+x1 = <span class="num">0.20</span>  <span class="com"># Humedad</span>
+x2 = <span class="num">0.80</span>  <span class="com"># Temperatura</span>
+x3 = <span class="num">1.00</span>  <span class="com"># Clima Soleado</span>
+
+X = np.array([x1, x2, x3])
+print(<span class="str">"Vector de Entrada X:"</span>, X)</pre>
+      </div>
+      <div class="graphic-box">
+        <h4 style="margin:0; color:#083d69; font-size:16px;">Variables de Entrada</h4>
+        <div style="width:100%; display:flex; flex-direction:column; gap:8px;">
+          <div style="background:var(--blue-light); border:1.5px solid var(--blue); padding:10px; border-radius:8px; font-size:13.5px;">
+            💧 <b>x₁ (Humedad):</b> <span class="val-badge val-blue">0.20</span> (Suelo seco)
+          </div>
+          <div style="background:var(--orange-light); border:1.5px solid var(--orange); padding:10px; border-radius:8px; font-size:13.5px;">
+            🌡️ <b>x₂ (Temperatura):</b> <span class="val-badge val-orange">0.80</span> (Día caluroso)
+          </div>
+          <div style="background:var(--purple-light); border:1.5px solid var(--purple); padding:10px; border-radius:8px; font-size:13.5px;">
+            ☀️ <b>x₃ (Clima):</b> <span class="val-badge val-purple">1.00</span> (Soleado)
+          </div>
+        </div>
+        <div class="card-info">
+          <b>Fundamentos:</b> Las redes neuronales requieren trabajar obligatoriamente con valores escalados en rangos numéricos continuos (habitualmente entre 0 y 1).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 2: LOS PESOS Y EL SESGO -->
+  <div class="panel screen" id="screen2" style="display:none;">
+    <h2 class="panel-title">PASO 2: Los Pesos (w) y el Sesgo (b)</h2>
+    <p style="font-size: 15px; margin-top: 0;">Parámetros iniciales que la red irá ajustando para aprender la importancia relativa de cada variable.</p>
+
+    <div class="grid-split">
+      <div>
+<pre><span class="com"># Inicialización aleatoria/pequeña de Pesos y Sesgo</span>
+<span class="com"># w1: Peso para Humedad</span>
+<span class="com"># w2: Peso para Temperatura</span>
+<span class="com"># w3: Peso para Clima</span>
+<span class="com"># b : Sesgo (bias)</span>
+
+w1 = <span class="num">0.10</span>
+w2 = <span class="num">-0.20</span>
+w3 = <span class="num">0.05</span>
+b  = <span class="num">0.10</span>
+
+W = np.array([w1, w2, w3])
+print(<span class="str">"Pesos iniciales W:"</span>, W)
+print(<span class="str">"Sesgo inicial b:"</span>, b)</pre>
+      </div>
+      <div class="graphic-box">
+        <h4 style="margin:0; color:#083d69; font-size:16px;">Configuración Inicial de Parámetros</h4>
+        <div style="width:100%; font-size:13px; line-height:1.6;">
+          <p style="margin:2px 0;">⚖️ <b>Peso w₁:</b> <span class="val-badge val-blue">0.10</span></p>
+          <p style="margin:2px 0;">⚖️ <b>Peso w₂:</b> <span class="val-badge val-orange">-0.20</span></p>
+          <p style="margin:2px 0;">⚖️ <b>Peso w₃:</b> <span class="val-badge val-purple">0.05</span></p>
+          <p style="margin:2px 0;">🎯 <b>Sesgo b:</b> <span class="val-badge val-green">0.10</span></p>
+        </div>
+        <div class="card-info">
+          <b>Fundamentos:</b> Al inicio del entrenamiento, la red no conoce las respuestas correctas. Por eso se le asignan pesos aleatorios o pequeños y el algoritmo los ajustará progresivamente.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 3: LA SUMA PONDERADA -->
+  <div class="panel screen" id="screen3" style="display:none;">
+    <h2 class="panel-title">PASO 3: La Suma Ponderada (z)</h2>
+    <p style="font-size: 15px; margin-top: 0;">Multiplicación escalar de cada entrada por su peso respectivo más el sesgo.</p>
+
+    <div class="grid-split">
+      <div>
+<pre><span class="com"># Cálculo de la Suma Ponderada z</span>
+<span class="com"># z = (x1 * w1) + (x2 * w2) + (x3 * w3) + b</span>
+
+z = np.<span class="fn">dot</span>(X, W) + b
+
+print(<span class="str">"Paso a paso:"</span>)
+print(<span class="str">"x1*w1 ="</span>, x1 * w1)  <span class="com"># 0.20 * 0.10 = 0.02</span>
+print(<span class="str">"x2*w2 ="</span>, x2 * w2)  <span class="com"># 0.80 * -0.20 = -0.16</span>
+print(<span class="str">"x3*w3 ="</span>, x3 * w3)  <span class="com"># 1.00 * 0.05 = 0.05</span>
+print(<span class="str">"Sesgo b ="</span>, b)        <span class="com"># 0.10</span>
+print(<span class="str">"Resultado z ="</span>, z)    <span class="com"># 0.01</span></pre>
+      </div>
+      <div class="graphic-box">
+        <h4 style="margin:0; color:#083d69; font-size:16px;">Combinación Lineal Integrada</h4>
+        <div style="background:#fff; border:1.5px solid var(--blue); padding:12px; border-radius:8px; width:100%; text-align:center; font-size:14px;">
+          z = (0.20 · 0.10) + (0.80 · -0.20) + (1.00 · 0.05) + 0.10<br>
+          <b style="font-size:18px; color:var(--blue); margin-top:6px; display:block;">z = 0.01</b>
+        </div>
+        <div class="card-info">
+          <b>Fundamentos:</b> El sesgo ($b$) permite trasladar la curva de activación horizontalmente para dar mayor flexibilidad a la neurona para adaptarse a los datos.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 4: FUNCIÓN DE ACTIVACIÓN -->
+  <div class="panel screen" id="screen4" style="display:none;">
+    <h2 class="panel-title">PASO 4: La Función de Activación (Sigmoide)</h2>
+    <p style="font-size: 15px; margin-top: 0;">Mapea el valor continuo z a un rango de probabilidad entre 0.0 y 1.0 agregando no-linealidad.</p>
+
+    <div class="grid-split">
+      <div>
+<pre><span class="com"># Función de Activación Sigmoide</span>
+<span class="kw">def</span> <span class="fn">sigmoide</span>(z):
+    <span class="kw">return</span> <span class="num">1</span> / (<span class="num">1</span> + np.<span class="fn">exp</span>(-z))
+
+<span class="com"># Aplicar la activación al resultado z</span>
+a = <span class="fn">sigmoide</span>(z)
+
+print(<span class="str">"Valor z de entrada:"</span>, z)
+print(<span class="str">"Activación a (predicción):"</span>, a)</pre>
+      </div>
+      <div class="graphic-box">
+        <h4 style="margin:0; color:#083d69; font-size:16px;">Transformación Sigmoidal</h4>
+        <div style="background:var(--purple-light); border:1.5px solid var(--purple); padding:12px; border-radius:8px; width:100%; text-align:center;">
+          <span style="font-size:13px; font-weight:bold; color:var(--purple);">a = 1 / (1 + e⁻ᶻ)</span>
+          <div style="font-size:22px; font-weight:800; color:var(--purple); margin-top:4px;">a = 0.5025</div>
+        </div>
+        <div class="card-info">
+          <b>Fundamentos:</b> Sin las funciones de activación no lineales, las redes neuronales multicapa se comportarían simplemente como un modelo de regresión lineal ordinario.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 5: PROPAGACIÓN HACIA ADELANTE (FORWARD) -->
+  <div class="panel screen" id="screen5" style="display:none;">
+    <h2 class="panel-title">PASO 5: Propagación Hacia Adelante (Forward Propagation)</h2>
+    <p style="font-size: 15px; margin-top: 0;">Flujo completo de procesamiento desde los atributos de entrada hasta generar la salida.</p>
+
+    <div class="grid-split">
+      <div>
+<pre><span class="kw">def</span> <span class="fn">forward_pass</span>(X, W, b):
+    <span class="com"># 1. Suma ponderada</span>
+    z = np.<span class="fn">dot</span>(X, W) + b
+    <span class="com"># 2. Función de activación</span>
+    a = <span class="fn">sigmoide</span>(z)
+    <span class="kw">return</span> z, a
+
+z, prediccion = <span class="fn">forward_pass</span>(X, W, b)
+print(<span class="str">"Predicción Forward:"</span>, prediccion)</pre>
+      </div>
+      <div class="graphic-box">
+        <h4 style="margin:0; color:#083d69; font-size:16px;">Esquema de Flujo Forward</h4>
+        <div style="font-size:13px; width:100%; text-align:center;">
+          <div style="background:#eef7ff; padding:8px; border-radius:6px; border:1px solid #b2c8d9;">[x₁, x₂, x₃] Entradas</div>
+          <div style="margin:3px 0;">⬇️ (Multiplicar por W y sumar b)</div>
+          <div style="background:#eef7ff; padding:8px; border-radius:6px; border:1px solid #b2c8d9;">z = 0.01</div>
+          <div style="margin:3px 0;">⬇️ (Aplicar f(z) Sigmoide)</div>
+          <div style="background:var(--purple-light); padding:8px; border-radius:6px; border:1px solid var(--purple); font-weight:bold; color:var(--purple);">a = 0.5025 Salida</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 6: OBTENER PREDICCIÓN Y COMPARAR -->
+  <div class="panel screen" id="screen6" style="display:none;">
+    <h2 class="panel-title">PASO 6: Obtener una Predicción</h2>
+    <p style="font-size: 15px; margin-top: 0;">Evaluación del resultado emitido por la red frente al valor real esperado.</p>
+
+    <div class="grid-split">
+      <div>
+<pre><span class="com"># Valor objetivo real (y): 1.0 (Regar = Sí)</span>
+y_real = <span class="num">1.0</span>
+
+print(<span class="str">"Respuesta Correcta Esperada (y):"</span>, y_real)
+print(<span class="str">"Probabilidad emitida por la Red (ŷ):"</span>, prediccion)
+
+<span class="com"># Si la probabilidad es mayor o igual a 0.50 el modelo dictamina Regar</span>
+decisión = <span class="str">"Regar"</span> <span class="kw">if</span> prediccion >= <span class="num">0.5</span> <span class="kw">else</span> <span class="str">"No Regar"</span>
+print(<span class="str">"Decisión de la red:"</span>, decisión)</pre>
+      </div>
+      <div class="graphic-box">
+        <h4 style="margin:0; color:#083d69; font-size:16px;">Comparativa: Realidad vs. Modelo</h4>
+        <div style="width:100%;">
+          <div style="background:var(--green-light); border:1.5px solid var(--green); padding:10px; border-radius:8px; margin-bottom:8px; font-size:13.5px;">
+            ✅ <b>Objetivo Real (y):</b> <span class="val-badge val-green">1.0</span> (SÍ requiere riego)
+          </div>
+          <div style="background:var(--orange-light); border:1.5px solid var(--orange); padding:10px; border-radius:8px; font-size:13.5px;">
+            ⚠️ <b>Predicción de la Red (ŷ):</b> <span class="val-badge val-orange">0.5025</span> (Incertidumbre casi al 50%)
+          </div>
+        </div>
+        <div class="card-info">
+          <b>Fundamentos:</b> Aunque la salida supera ligeramente el umbral de decisión (0.50), la probabilidad estimada (50.25%) está muy alejada de la certeza (100%).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 7: MEDIR EL ERROR -->
+  <div class="panel screen" id="screen7" style="display:none;">
+    <h2 class="panel-title">PASO 7: Medir el Error (Loss Function)</h2>
+    <p style="font-size: 15px; margin-top: 0;">Cuantificación matemática de qué tan lejos estuvo la estimación realizada.</p>
+
+    <div class="grid-split">
+      <div>
+<pre><span class="com"># Cálculo del Error Cuadrático Medio (MSE para un solo ejemplo)</span>
+<span class="com"># L = 0.5 * (y_real - prediccion)^2</span>
+
+loss = <span class="num">0.5</span> * (y_real - prediccion)**<span class="num">2</span>
+
+print(<span class="str">"Diferencia (y - ŷ):"</span>, y_real - prediccion)
+print(<span class="str">"Pérdida calculada (Loss):"</span>, loss)</pre>
+      </div>
+      <div class="graphic-box">
+        <h4 style="margin:0; color:#083d69; font-size:16px;">Magnitud del Error</h4>
+        <div style="background:var(--red-light); border:1.5px solid var(--red); padding:12px; border-radius:8px; width:100%; text-align:center;">
+          <span style="font-size:13px; font-weight:bold; color:var(--red);">Pérdida Actual (Loss):</span>
+          <div style="font-size:22px; font-weight:800; color:var(--red); margin-top:4px;">L = 0.1238</div>
+        </div>
+        <div class="card-info">
+          <b>Fundamentos:</b> La función de pérdida nos otorga una métrica cuantitativa. El objetivo final de la etapa de entrenamiento es minimizar esta métrica hacia valores cercanos a cero.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 8: BACKPROPAGATION -->
+  <div class="panel screen" id="screen8" style="display:none;">
+    <h2 class="panel-title">PASO 8: Retropropagación (Backpropagation)</h2>
+    <p style="font-size: 15px; margin-top: 0;">Cálculo de gradientes (derivadas) aplicando la regla de la cadena para distribuir la responsabilidad del error a cada parámetro.</p>
+
+    <div class="grid-split">
+      <div>
+<pre><span class="com"># Derivada del error respecto a z (delta)</span>
+<span class="com"># dL/da = -(y - a)</span>
+<span class="com"># da/dz = a * (1 - a)</span>
+delta = (prediccion - y_real) * (prediccion * (<span class="num">1</span> - prediccion))
+
+<span class="com"># Gradientes de los pesos y el sesgo</span>
+grad_w1 = delta * x1
+grad_w2 = delta * x2
+grad_w3 = delta * x3
+grad_b  = delta
+
+print(<span class="str">"Gradiente W1:"</span>, grad_w1)
+print(<span class="str">"Gradiente W2:"</span>, grad_w2)
+print(<span class="str">"Gradiente W3:"</span>, grad_w3)
+print(<span class="str">"Gradiente Bias:"</span>, grad_b)</pre>
+      </div>
+      <div class="graphic-box">
+        <h4 style="margin:0; color:#083d69; font-size:16px;">Vector de Gradientes Calculados</h4>
+        <div style="width:100%; font-size:13px; line-height:1.6;">
+          <p style="margin:2px 0;">∇w₁: <span class="val-badge val-blue">-0.0249</span></p>
+          <p style="margin:2px 0;">∇w₂: <span class="val-badge val-orange">-0.0995</span></p>
+          <p style="margin:2px 0;">∇w₃: <span class="val-badge val-purple">-0.1244</span></p>
+          <p style="margin:2px 0;">∇b : <span class="val-badge val-green">-0.1244</span></p>
+        </div>
+        <div class="card-info">
+          <b>Fundamentos:</b> El signo negativo del gradiente nos indica en qué dirección debemos desplazar cada parámetro para lograr disminuir la pérdida en la próxima iteración.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 9: ACTUALIZAR PESOS Y RESULTADO -->
+  <div class="panel screen" id="screen9" style="display:none;">
+    <h2 class="panel-title">PASO 9: Actualizar Pesos (Descenso de Gradiente)</h2>
+    <p style="font-size: 15px; margin-top: 0;">Modificación efectiva de los parámetros y verificación de la mejora en la predicción final.</p>
+
+    <div class="grid-split">
+      <div>
+<pre><span class="com"># Tasa de Aprendizaje (Learning Rate)</span>
+learning_rate = <span class="num">1.0</span>
+
+<span class="com"># Regla de actualización: W_nuevo = W_viejo - lr * gradiente</span>
+w1 = w1 - learning_rate * grad_w1
+w2 = w2 - learning_rate * grad_w2
+w3 = w3 - learning_rate * grad_w3
+b  = b  - learning_rate * grad_b
+
+W_actualizado = np.array([w1, w2, w3])
+
+<span class="com"># Re-evaluar Forward pass con parámetros actualizados</span>
+_, nueva_prediccion = <span class="fn">forward_pass</span>(X, W_actualizado, b)
+
+print(<span class="str">"Predicción previa:"</span>, <span class="num">0.5025</span>)
+print(<span class="str">"Nueva predicción tras 1 iteración:"</span>, nueva_prediccion)</pre>
+      </div>
+      <div class="graphic-box">
+        <h4 style="margin:0; color:#083d69; font-size:16px;">Evolución del Aprendizaje</h4>
+        <div style="width:100%;">
+          <div style="background:#f0f4f8; padding:8px; border-radius:6px; margin-bottom:8px; font-size:13px;">
+            <b>Predicción Inicial:</b> 0.5025 (50.25%)
+          </div>
+          <div style="background:var(--green-light); border:1.5px solid var(--green); padding:12px; border-radius:8px; text-align:center;">
+            <span style="font-size:13px; font-weight:bold; color:var(--green);">Nueva Predicción (ŷ):</span>
+            <div style="font-size:22px; font-weight:800; color:var(--green); margin-top:2px;">0.5841 (58.41%)</div>
+          </div>
+        </div>
+        <div class="card-info">
+          <b>Fundamentos:</b> Tras una sola iteración de actualización, la estimación mejoró del 50.25% al 58.41%, acercándose progresivamente hacia la certeza esperada del 100%.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentScreen = 1;
+const totalScreens = 9;
+
+const screenLabels = [
+  "PASO 1 de 9",
+  "PASO 2 de 9",
+  "PASO 3 de 9",
+  "PASO 4 de 9",
+  "PASO 5 de 9",
+  "PASO 6 de 9",
+  "PASO 7 de 9",
+  "PASO 8 de 9",
+  "PASO 9 de 9"
+];
+
+function updateNavigation() {
+  document.querySelectorAll('.screen').forEach((s, idx) => {
+    s.style.display = (idx + 1 === currentScreen) ? 'flex' : 'none';
+  });
+  document.getElementById('btnPrev').disabled = (currentScreen === 1);
+  document.getElementById('btnNext').disabled = (currentScreen === totalScreens);
+  
+  document.getElementById('stepTitle').textContent = screenLabels[currentScreen - 1];
+  
+  document.getElementById('progressBar').style.width = `${(currentScreen / totalScreens) * 100}%`;
+}
+
+function navigate(dir) {
+  currentScreen = Math.max(1, Math.min(totalScreens, currentScreen + dir));
+  updateNavigation();
+}
+
+updateNavigation();
+</script>
+</body>
+</html>
